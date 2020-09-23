@@ -1,0 +1,11 @@
+.git
+.gitignore
+*.out
+*.pyc
+*.pyo
+*.pyd
+*.bak
+
+__pycache__
+
+README.md

@@ -25,7 +25,7 @@ def run_update_index():
         detail = api.get_world_detail(w['id'])
         worlds.append(detail.to_web())
     data = {'worlds':worlds}
-    with open(cache_path, "w") as f:
+    with open(cache_path, "w", encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False)
 
     client = storage.Client()

@@ -44,8 +44,8 @@ class VrcWorld:
             i.author_name = m['authorName']
             i.author_id = m['authorId']
             i.tags = m['tags']
-            i.created_at = datetime.datetime.fromisoformat(m['created_at'][:-1])
-            i.updated_at = datetime.datetime.fromisoformat(m['updated_at'][:-1])
+            i.created_at = datetime.datetime.fromisoformat(m['created_at'][:-5])
+            i.updated_at = datetime.datetime.fromisoformat(m['updated_at'][:-5])
             i.release_status = m['releaseStatus']
             i.visits = m['visits']
             i.favorites = m['favorites']
@@ -107,18 +107,20 @@ class VrcApi:
 
     def get_popular_worlds(self):
         return self.search_worlds('sort=popularity&featured=false&order=descending&n=30')
-    def get_created_worlds(self):
-        return self.search_worlds('sort=created&order=descending&n=30')
-    def get_published_worlds(self):
-        return self.search_worlds('sort=updated&order=descending&n=30&notag=system_labs')
+    def get_created_worlds(self, last=None):
+        return self.search_worlds('sort=created&order=descending&n=30', last)
+    def get_published_worlds(self, last=None):
+        return self.search_worlds('sort=updated&order=descending&n=100&notag=system_labs', last)
 
-    def search_worlds(self, options):
+    def search_worlds(self, options, last=None):
         details = []
         url = "{}/worlds?{}".format(API_BASE, options)
         response = requests.get(url, params={"apiKey": self.api_key, "authToken": self.auth_token}, headers=self.headers)
         worlds = json.loads(response.text)
         for w in worlds:
             detail = self.get_world_detail(w['id'])
+            if last is not None and detail.updated_at <= last:
+                break
             details.append(detail)
         return details
         

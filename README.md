@@ -2,21 +2,21 @@
 This is VRChat Search Site.
 
 # Build
-docker build -t vrc docker/
+docker build -t gcr.io/vrchat-analyzer/crawler .
 
 # run
-docker run -it --rm -p 8080:8080 -v C:\obara\VrcSearch:/app vrc /bin/bash
+docker run -it --rm -p 8080:8080 -v C:\obara\VrcSearch:/app gcr.io/vrchat-analyzer/crawler /bin/bash
 
 # push
-# memory_size = 2G
+### memory_size = 2G
 gcloud builds submit --tag gcr.io/art-of-art/test --project art-of-art .
 
-# better ?
-# PROJECT_ID=vrchat-analyzer
-# IMAGE=crawler
+### PROJECT_ID=vrchat-analyzer
+### IMAGE=crawler
 
+# deploy
 docker build -t gcr.io/vrchat-analyzer/crawler .
 gcloud docker -- push gcr.io/vrchat-analyzer/crawler
 
-# 中間イメージ削除
+# remove docker caches
 docker images -aq | xargs docker rmi

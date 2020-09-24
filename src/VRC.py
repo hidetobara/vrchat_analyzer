@@ -109,8 +109,8 @@ class VrcApi:
         return self.search_worlds('sort=popularity&featured=false&order=descending&n=30')
     def get_created_worlds(self, last=None):
         return self.search_worlds('sort=created&order=descending&n=30', last)
-    def get_published_worlds(self, last=None):
-        return self.search_worlds('sort=updated&order=descending&n=100&notag=system_labs', last)
+    def get_updated_worlds(self, last=None):
+        return self.search_worlds('sort=updated&order=descending&n=100', last) # &notag=system_labs
 
     def search_worlds(self, options, last=None):
         details = []

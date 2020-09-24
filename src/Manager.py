@@ -49,29 +49,22 @@ SELECT id,name,_value FROM temp1 WHERE _rank = 1 ORDER BY _value DESC LIMIT {}""
             yield row
 
     def crawl_worlds(self):
-        last_created = None
-        last_published = None
+        last_updated = None
         if os.path.exists(Manager.CRAWLED_PATH):
             with open(Manager.CRAWLED_PATH, 'r') as f:
                 crawled = json.load(f)
-                last_created = str2ts(crawled['last_created'])
-                last_published = str2ts(crawled['last_published'])
+                last_updated = str2ts(crawled['last_updated'])
         worlds = []
-        rows = self.api.get_created_worlds(last_created)
+        rows = self.api.get_updated_worlds(last_updated)
         if len(rows) > 0:
-            last_created = rows[0].updated_at
-            worlds.extend(rows)
-        time.sleep(1)
-        rows = self.api.get_published_worlds(last_published)
-        if len(rows) > 0:
-            last_published = rows[0].updated_at
+            last_updated = rows[0].updated_at
             worlds.extend(rows)
         time.sleep(1)
         worlds.extend(self.api.get_familiar_worlds())
         self.insert_rows(list(map(lambda x: x.to_bq(), worlds)), Manager.BQ_TABLE)
 
         with open(Manager.CRAWLED_PATH, 'w') as f:
-            json.dump({'last_created':ts2str(last_created), 'last_published':ts2str(last_published)}, f)
+            json.dump({'last_updated':ts2str(last_updated)}, f)
 
     def update_index(self):
         worlds = []

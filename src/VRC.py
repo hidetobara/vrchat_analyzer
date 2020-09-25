@@ -119,6 +119,8 @@ class VrcApi:
         worlds = json.loads(response.text)
         for w in worlds:
             detail = self.get_world_detail(w['id'])
+            if not detail.is_public():
+                continue
             if last is not None and detail.updated_at <= last:
                 break
             details.append(detail)

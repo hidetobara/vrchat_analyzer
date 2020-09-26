@@ -15,7 +15,7 @@ def str2ts(s):
     return datetime.datetime.fromisoformat(s) # %Y-%m-%d %H:%M:%S
 
 class Manager:
-    INDEX_PATH = 'tmp/index.json'
+    INDEX_PATH = 'tmp/index.tsv'
     CRAWLED_PATH = 'tmp/crawled.json'
     BQ_TABLE = 'vrchat-analyzer.crawled.worlds'
 
@@ -36,7 +36,7 @@ class Manager:
         r = self.bq_client.insert_rows_json(table, rows)
         print("insert_logs=", r, "len=", len(rows))
 
-    def selecting_ranked_worlds(self, table_path="vrchat-analyzer.crawled.worlds", limit=30):
+    def selecting_ranked_worlds(self, table_path="vrchat-analyzer.crawled.worlds", limit=100):
         sql = """with temp1 as (
 SELECT
     id,name,
@@ -67,25 +67,51 @@ SELECT id,name,_value FROM temp1 WHERE _rank = 1 ORDER BY _value DESC LIMIT {}""
             json.dump({'last_updated':ts2str(last_updated)}, f)
 
     def update_index(self):
-        worlds = []
-        for w in self.selecting_ranked_worlds():
+        rows = []
+        for w in self.selecting_ranked_worlds(limit=300):
             detail = self.api.get_world_detail(w['id'])
-            worlds.append(detail.to_web())
-        data = {'worlds':worlds}
+            time.sleep(1)
+            rows.append(detail.to_tsv())
+            if len(rows) % 10 == 0:
+                print("update=", len(rows))
         with open(Manager.INDEX_PATH, "w", encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False)
+            for row in rows:
+                f.write("\t".join(row) + "\n")
 
         client = storage.Client()
         bucket = storage.Bucket(client)
         bucket.name = "vrchat-frontend"
-        blob = bucket.blob("index.json")
+        blob = bucket.blob("index.tsv")
         blob.upload_from_filename(Manager.INDEX_PATH)
+
+    def exist_index(self):
+        return os.path.exists(Manager.INDEX_PATH)
 
     def download_index(self):
         client = storage.Client()
         bucket = storage.Bucket(client)
         bucket.name = "vrchat-frontend"
-        blob = bucket.blob("index.json")
+        blob = bucket.blob("index.tsv")
         blob.download_to_filename(Manager.INDEX_PATH)
        
-
+    def selecting_index(self, offset=0, limit=10, query=None):
+        array = []
+        index = -1
+        with open(Manager.INDEX_PATH, "r", encoding='utf-8') as f:
+            for line in f:
+                index += 1
+                if index < offset:
+                    continue
+                if query is None or query in line:
+                    cells = line.split("\t")
+                    ext = json.loads(cells[4])
+                    array.append({
+                        'is_start': len(array) % 3 == 0, 'is_end': len(array) % 3 == 2,
+                        'id':cells[0], 'name':cells[1], 'author_name':cells[2], 'description':cells[3],
+                        'launch_url':"https://www.vrchat.com/home/launch?worldId={}".format(cells[0]),
+                        'thumbnail_image_url':ext['thumbnail_image_url']
+                    })
+                if len(array) >= limit:
+                    break
+        return array
+                

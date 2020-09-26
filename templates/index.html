@@ -5,9 +5,9 @@
     <div class="card">
         <h5 class="card-header">検索</h5>
         <div class="card-body">
-            <form action="/status" method="POST">
+            <form action="/search" method="GET">
                 <div class="input-group mb-3">
-                    <input type="text" name="content" class="form-control" placeholder="keywords" aria-label="..." aria-describedby="button-addon2">
+                    <input type="text" name="query" class="form-control" placeholder="keywords" aria-label="..." aria-describedby="button-addon2" value="{% if query %}{{ query }}{% endif %}">
                     <div class="input-group-append">
                         <input type="submit" id="button-addon2" class="btn btn-outline-secondary" value="検索開始" />
                     </div>
@@ -16,26 +16,26 @@
         </div>
     </div><br/>
 
-    <div class="card">
-        <h5 class="card-header">流行り</h5>
+    {% if error %}
+    <big>{{ error }}</big>
+    {% endif %}
+
+    {% for w in worlds %}
+    {% if w['is_start'] %}
+    <div class='row'>
+    {% endif %}
+    <div class="card col-sm-4">
+        <img class="card-img-top" src="{{ w['thumbnail_image_url'] }}">
         <div class="card-body">
-            {% if error %}
-                <big>{{ error }}</big>
-            {% endif %}
-            <table class="table">
-            {% for w in worlds %}
-                <tr>
-                    <td><img src="{{ w['thumbnail_image_url'] }}" width="256px" /></td>
-                    <td>
-                        <big><a target="_blank" href="{{ w['launch_url'] }}">{{ w['name'] }}</a></big><br/>
-                        {{ w['author_name'] }} <br/>
-                        {{ w['description'] }} <br/>
-                    </td>
-                </tr>
-            {% endfor %}
-            </table>
+            <h5 class="card-title"><a target="_blank" href="{{ w['launch_url'] }}">{{ w['name'] }}</a></h5>
+            <h6 class="card-subtitle text-muted">{{ w['author_name'] }}</h6>
+            <p class="card-text">{{ w['description'] }}</p>
         </div>
     </div>
+    {% if w['is_end'] %}
+</div>
+    {% endif %}
+    {% endfor %}
 
 </div>
 {% endblock %}

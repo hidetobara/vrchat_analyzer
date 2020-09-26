@@ -1,4 +1,4 @@
-import json,datetime,requests
+import json,datetime,requests,json
 from requests.auth import HTTPBasicAuth
 from src.Config import Config
 
@@ -28,12 +28,19 @@ class VrcWorld:
         return {'id':self.id, 'name':self.name, 'author_id':self.author_id, 'author_name':self.author_name,
             'description':self.description, 'tags':'|'+'|'.join(self.tags)+'|',
             'created_at':self.created_at.strftime('%Y-%m-%d %H:%M:%S'), 'updated_at':self.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
-            'visits':self.visits, 'favorites':self.favorites}
-
+            'visits':self.visits, 'favorites':self.favorites, 'thumbnail_image_url':self.thumbnail_image_url}
     def to_web(self):
-        return {'name':self.name, 'description':self.description, 'author_name':self.author_name,
+        return {'id':self.id, 'name':self.name, 'description':self.description, 'author_name':self.author_name,
         'thumbnail_image_url':self.thumbnail_image_url,
         'launch_url':"https://www.vrchat.com/home/launch?worldId={}".format(self.id)}
+    def to_tsv(self):
+        return [
+            self.id if str(self.id) is not None else "",
+            self.name if self.name is not None else "",
+            self.author_name if self.author_name is not None else "",
+            self.description if self.description is not None else "",
+            json.dumps({'thumbnail_image_url': self.thumbnail_image_url})
+        ]
 
     @staticmethod
     def parse(m):
@@ -53,6 +60,7 @@ class VrcWorld:
             i.heat = m['heat']
             i.description = m['description']
         except Exception as ex:
+            print("ERROR=", ex)
             i.release_status = 'error'
             i.description = str(ex)
         return i

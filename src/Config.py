@@ -1,6 +1,11 @@
 import os,json
 
 class Config:
+    INDEX_PATH = 'tmp/index.tsv'
+    CRAWLED_PATH = 'tmp/crawled.json'
+    BQ_TABLE = 'vrchat-analyzer.crawled.worlds'
+    BUCKET_NAME = 'vrchat-frontend'
+
     def __init__(self, path=None, table=None):
         self.table = {}
         if path is not None and os.path.exists(path):

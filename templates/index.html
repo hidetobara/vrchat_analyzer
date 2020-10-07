@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="mx-auto col-12">
+<div class="mx-auto container">
 
     <div class="card">
         <h5 class="card-header">検索</h5>
@@ -21,21 +21,35 @@
     {% endif %}
 
     {% for w in worlds %}
-    {% if w['is_start'] %}
+    {% if w['col'] == 0 %}
     <div class='row'>
     {% endif %}
-    <div class="card col-sm-4">
-        <img class="card-img-top" src="{{ w['thumbnail_image_url'] }}">
+        <div class='col-sm-4'>
+            <div class="card">
+                <a target="_blank" href="{{ w['launch_url'] }}"><img class="card-img-top" src="{{ w['thumbnail_image_url'] }}"></a>
+                <div class="card-body">
+                    <h5 class="card-title"><a target="_blank" href="{{ w['launch_url'] }}">{{ w['name'] }}</a></h5>
+                    <h6 class="card-subtitle">{{ w['author_name'] }}</h6>
+                    <hr/>
+                    <p class="card-text">{{ w['description'] }}</p>
+                </div>
+            </div>
+        </div>
+    {% if w['col'] == 2 or w['is_last'] %}
+    </div>
+    {% endif %}
+
+    {% endfor %}
+
+    {% if query %}
+    <br/>
+    <div class="card">
         <div class="card-body">
-            <h5 class="card-title"><a target="_blank" href="{{ w['launch_url'] }}">{{ w['name'] }}</a></h5>
-            <h6 class="card-subtitle text-muted">{{ w['author_name'] }}</h6>
-            <p class="card-text">{{ w['description'] }}</p>
+            <a class="btn btn-lg btn-secondary" href="/search?query={{ query }}">First</a>...
+            <a class="btn btn-secondary" href="/search?query={{ query }}&offset={{ next }}">Next</a>
         </div>
     </div>
-    {% if w['is_end'] %}
-</div>
     {% endif %}
-    {% endfor %}
 
 </div>
 {% endblock %}

@@ -1,29 +1,30 @@
 import os,sys,traceback,json
 from flask import Flask, render_template, request, send_from_directory, redirect, jsonify
 
-from google.cloud import storage
 from src.Config import Config
-from src.VRC import VrcApi
-from src.Manager import ts2str, d2str, Manager
+from src.Web import Web
 
 app = Flask(__name__)
 c = Config("private/my_account.json")
-manager = Manager(c)
+web = Web(c)
 
 @app.route('/', methods=['GET'])
 def get_index():
-    if not manager.exist_index():
-        manager.download_index()
+    if not web.exist_index():
+        web.download_index()
 
-    worlds = manager.selecting_index()
+    worlds = web.selecting_index(0, 12)
     context = { 'title':"Search VRC worlds", 'worlds':worlds }
     return render_template('index.html', **context)
 
 @app.route('/search', methods=['GET'])
 def get_search():
     q = request.args.get('query')
-    worlds = manager.selecting_index(0, 10, q)
-    context = { 'title':"Search VRC worlds", 'worlds':worlds, 'query':q }
+    offset_current = request.args.get('offset', type=int)
+    if offset_current is None:
+        offset_current = -1
+    worlds, offset_next = web.selecting_index(offset_current + 1, 12, q)
+    context = { 'title':"Search VRC worlds", 'worlds':worlds, 'query':q, 'current':offset_current, 'next':offset_next }
     return render_template('index.html', **context)
 
 if __name__ == "__main__":

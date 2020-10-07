@@ -15,10 +15,6 @@ def str2ts(s):
     return datetime.datetime.fromisoformat(s) # %Y-%m-%d %H:%M:%S
 
 class Manager:
-    INDEX_PATH = 'tmp/index.tsv'
-    CRAWLED_PATH = 'tmp/crawled.json'
-    BQ_TABLE = 'vrchat-analyzer.crawled.worlds'
-
     def __init__(self, config):
         self.config = config
         self.bq_client = bigquery.Client()
@@ -50,8 +46,8 @@ SELECT id,name,_value FROM temp1 WHERE _rank = 1 ORDER BY _value DESC LIMIT {}""
 
     def crawl_worlds(self):
         last_updated = None
-        if os.path.exists(Manager.CRAWLED_PATH):
-            with open(Manager.CRAWLED_PATH, 'r') as f:
+        if os.path.exists(Config.CRAWLED_PATH):
+            with open(Config.CRAWLED_PATH, 'r') as f:
                 crawled = json.load(f)
                 last_updated = str2ts(crawled['last_updated'])
         worlds = []
@@ -61,57 +57,27 @@ SELECT id,name,_value FROM temp1 WHERE _rank = 1 ORDER BY _value DESC LIMIT {}""
             worlds.extend(rows)
         time.sleep(1)
         worlds.extend(self.api.get_familiar_worlds())
-        self.insert_rows(list(map(lambda x: x.to_bq(), worlds)), Manager.BQ_TABLE)
+        self.insert_rows(list(map(lambda x: x.to_bq(), worlds)), Config.BQ_TABLE)
 
-        with open(Manager.CRAWLED_PATH, 'w') as f:
+        with open(Config.CRAWLED_PATH, 'w') as f:
             json.dump({'last_updated':ts2str(last_updated)}, f)
 
     def update_index(self):
         rows = []
-        for w in self.selecting_ranked_worlds(limit=300):
+        for w in self.selecting_ranked_worlds(limit=1000):
             detail = self.api.get_world_detail(w['id'])
-            time.sleep(1)
+            if detail is None:
+                continue
             rows.append(detail.to_tsv())
             if len(rows) % 10 == 0:
                 print("update=", len(rows))
-        with open(Manager.INDEX_PATH, "w", encoding='utf-8') as f:
+            time.sleep(1)
+        with open(Config.INDEX_PATH, "w", encoding='utf-8') as f:
             for row in rows:
                 f.write("\t".join(row) + "\n")
 
         client = storage.Client()
         bucket = storage.Bucket(client)
-        bucket.name = "vrchat-frontend"
+        bucket.name = Config.BUCKET_NAME
         blob = bucket.blob("index.tsv")
-        blob.upload_from_filename(Manager.INDEX_PATH)
-
-    def exist_index(self):
-        return os.path.exists(Manager.INDEX_PATH)
-
-    def download_index(self):
-        client = storage.Client()
-        bucket = storage.Bucket(client)
-        bucket.name = "vrchat-frontend"
-        blob = bucket.blob("index.tsv")
-        blob.download_to_filename(Manager.INDEX_PATH)
-       
-    def selecting_index(self, offset=0, limit=10, query=None):
-        array = []
-        index = -1
-        with open(Manager.INDEX_PATH, "r", encoding='utf-8') as f:
-            for line in f:
-                index += 1
-                if index < offset:
-                    continue
-                if query is None or query in line:
-                    cells = line.split("\t")
-                    ext = json.loads(cells[4])
-                    array.append({
-                        'is_start': len(array) % 3 == 0, 'is_end': len(array) % 3 == 2,
-                        'id':cells[0], 'name':cells[1], 'author_name':cells[2], 'description':cells[3],
-                        'launch_url':"https://www.vrchat.com/home/launch?worldId={}".format(cells[0]),
-                        'thumbnail_image_url':ext['thumbnail_image_url']
-                    })
-                if len(array) >= limit:
-                    break
-        return array
-                
+        blob.upload_from_filename(Config.INDEX_PATH)

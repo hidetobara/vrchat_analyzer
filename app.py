@@ -13,7 +13,7 @@ def get_index():
     if not web.exist_index():
         web.download_index()
 
-    worlds = web.selecting_index(0, 12)
+    worlds, _ = web.selecting_index(0, 12)
     context = { 'title':"Search VRC worlds", 'worlds':worlds }
     return render_template('index.html', **context)
 

@@ -1,5 +1,6 @@
 import os,json
 
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = './private/vrchat-analyzer-ba2bcb1497e6.json'
 from google.cloud import storage
 from src.Config import Config
 

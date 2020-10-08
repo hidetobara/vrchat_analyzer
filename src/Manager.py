@@ -37,7 +37,7 @@ class Manager:
 SELECT
     id,name,
     ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at) as _rank,
-    (SQRT(visits) + favorites) / (DATE_DIFF(CURRENT_DATE(), DATE(created_at), DAY)+1) as _value FROM `{}`
+    (SQRT(visits) + SQRT(favorites)) / (DATE_DIFF(CURRENT_DATE(), DATE(created_at), DAY)+1) as _value FROM `{}`
 )
 SELECT id,name,_value FROM temp1 WHERE _rank = 1 ORDER BY _value DESC LIMIT {}""".format(table_path, limit)
         print("sql=", sql)

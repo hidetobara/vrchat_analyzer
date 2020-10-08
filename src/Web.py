@@ -22,6 +22,7 @@ class Web:
         array = []
         index = -1
         with open(Config.INDEX_PATH, "r", encoding='utf-8') as f:
+            is_end = True
             for line in f:
                 index += 1
                 if index < offset:
@@ -37,7 +38,8 @@ class Web:
                         'is_last': False
                     })
                 if len(array) >= limit:
+                    is_end = False
                     break
         if len(array) > 0:
             array[-1]['is_last'] = True
-        return array, index
+        return array, None if is_end else index + 1

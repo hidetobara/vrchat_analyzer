@@ -10,22 +10,23 @@ web = Web(c)
 
 @app.route('/', methods=['GET'])
 def get_index():
-    if not web.exist_index():
-        web.download_index()
-
-    worlds, _ = web.selecting_index(0, 12)
-    context = { 'title':"Search VRC worlds", 'worlds':worlds }
-    return render_template('index.html', **context)
+    context = { 'title':"Search VRC worlds" }
+    return render_template('top.html', **context)
 
 @app.route('/search', methods=['GET'])
 def get_search():
     q = request.args.get('query')
-    offset_current = request.args.get('offset', type=int)
-    if offset_current is None:
-        offset_current = -1
-    worlds, offset_next = web.selecting_index(offset_current + 1, 12, q)
-    context = { 'title':"Search VRC worlds", 'worlds':worlds, 'query':q, 'current':offset_current, 'next':offset_next }
-    return render_template('index.html', **context)
+    offset = request.args.get('offset', type=int)
+    if type(offset) is int:
+        limit = 48
+    else:
+        offset = 0
+        limit = 12
+    worlds, offset_last = web.selecting_index(offset, limit, q)
+    context = { 'title':"Search VRC worlds", 'worlds':worlds, 'query':q, 'next':offset_last }
+    return render_template('search.html', **context)
 
 if __name__ == "__main__":
+    if not web.exist_index():
+        web.download_index()
     app.run(debug=True,host='0.0.0.0',port=8080)

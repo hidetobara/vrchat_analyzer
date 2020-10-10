@@ -1,4 +1,5 @@
-import sys,os,json,datetime,re,html,urllib,time
+import sys,os,json,re,html,urllib,time
+from datetime import datetime, timedelta
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = './private/vrchat-analyzer-ba2bcb1497e6.json'
 from google.cloud import bigquery
@@ -31,6 +32,15 @@ class Manager:
         table = self.bq_client.get_table(table_ref)
         r = self.bq_client.insert_rows_json(table, rows)
         print("insert_logs=", r, "len=", len(rows))
+
+    def upload_bucket(self, path):
+        filename = os.path.basename(path)
+
+        client = storage.Client()
+        bucket = storage.Bucket(client)
+        bucket.name = Config.BUCKET_NAME
+        blob = bucket.blob(filename)
+        blob.upload_from_filename(path)
 
     def selecting_ranked_worlds(self, table_path="vrchat-analyzer.crawled.worlds", limit=100):
         sql = """with temp1 as (
@@ -76,8 +86,35 @@ SELECT id,name,_value FROM temp1 WHERE _rank = 1 ORDER BY _value DESC LIMIT {}""
             for row in rows:
                 f.write("\t".join(row) + "\n")
 
-        client = storage.Client()
-        bucket = storage.Bucket(client)
-        bucket.name = Config.BUCKET_NAME
-        blob = bucket.blob("index.tsv")
-        blob.upload_from_filename(Config.INDEX_PATH)
+        self.upload_bucket(Config.INDEX_PATH)
+
+    def selecting_new_coming_worlds(self, table_path="vrchat-analyzer.crawled.worlds", days=21):
+        day_from = datetime.today() - timedelta(days=days)
+        sql = """with temp1 as (
+SELECT
+    id,name,
+    ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at) as _rank,
+    (SQRT(visits) + favorites) / SQRT(DATE_DIFF(CURRENT_DATE(), DATE(created_at), DAY)+1) as _value FROM `{}`
+    WHERE created_at >= '{}'
+)
+SELECT id,name,_value FROM temp1 WHERE _rank = 1 AND _value > 3 ORDER BY _value DESC""".format(table_path, d2str(day_from))
+        print("sql=", sql)
+        for row in self.bq_client.query(sql).result():
+            yield row
+
+    def update_new_coming(self):
+        rows = []
+        for w in self.selecting_new_coming_worlds(days=14):
+            detail = self.api.get_world_detail(w['id'])
+            if detail is None:
+                continue
+            rows.append(detail.to_tsv())
+            if len(rows) % 10 == 0:
+                print("update=", len(rows))
+            time.sleep(1)
+        with open(Config.NEW_COMING_PATH, "w", encoding='utf-8') as f:
+            for row in rows:
+                f.write("\t".join(row) + "\n")
+
+        self.upload_bucket(Config.NEW_COMING_PATH)
+

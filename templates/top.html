@@ -2,22 +2,24 @@
 {% block content %}
 <div class="m-auto container">
     <br/>
-    <br/>
+    <div class="card bg-light">
+        <div class="card-body mx-auto">
+            VRChat 内を検索
+        </div>
+    </div>
     <br/>
 
-    <div class="card">
-        <h5 class="card-header">VRChat内を検索</h5>
-        <div class="card-body">
-            <form action="/search" method="GET">
-                <div class="input-group mb-3">
-                    <input type="text" name="query" class="form-control" placeholder="keywords" aria-label="..." aria-describedby="button-addon2" value="{% if query %}{{ query }}{% endif %}">
-                    <div class="input-group-append">
-                        <input type="submit" id="button-addon2" class="btn btn-dark" value="検索開始" />
-                    </div>
-                </div>
-            </form>
+    {% include "_search_core.html" %}
+
+    <br/>
+    <div class="card bg-light">
+        <div class="card-body mx-auto">
+            最近の流行り
         </div>
-    </div><br/>
+    </div>
+    <br/>
+
+    {% include "_searched_worlds.html" %}
 
 </div>
 {% endblock %}

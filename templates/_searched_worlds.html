@@ -1,0 +1,26 @@
+{% for w in worlds %}
+{% if w['col'] == 0 %}
+<div class='row'>
+{% endif %}
+    <div class='col-sm-4'>
+        <div class="card">
+            <a target="_blank" href="{{ w['launch_url'] }}"><img class="card-img-top" src="{{ w['thumbnail_image_url'] }}"></a>
+            <div class="card-body">
+                <h5 class="card-title"><a target="_blank" href="{{ w['launch_url'] }}">{{ w['name'] }}</a></h5>
+                <h6 class="card-subtitle">{{ w['author_name'] }}</h6>
+                <hr/>
+                <p class="card-text">
+                    {% if w['description']|length > 96 %}
+                        {{ w['description'][:96] }}...
+                    {% else %}
+                        {{ w['description'] }}
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+{% if w['col'] == 2 or w['is_last'] %}
+</div><br/>
+{% endif %}
+
+{% endfor %}

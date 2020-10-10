@@ -1,0 +1,39 @@
+
+<div class="card">
+    <div class="card-body">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link {{ all_is_active }}" id="all-tab" data-toggle="tab" href="#all" role="tab" aria-controls="all" aria-selected="true">すべて</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ coming_is_active }}" id="coming-tab" data-toggle="tab" href="#coming" role="tab" aria-controls="coming" aria-selected="false">最近</a>
+            </li>
+        </ul>
+        <br />
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane show {{ all_is_active }}" id="all" role="tabpanel" aria-labelledby="all-tab">
+                <form id="all" action="/search" method="GET">
+                    <div class="input-group mb-3">
+                        <input type="text" name="query" class="form-control" placeholder="keywords" aria-label="..." aria-describedby="button-addon2" value="{% if query %}{{ query }}{% endif %}">
+                        <div class="input-group-append">
+                            <input type="submit" id="button-addon2" class="btn btn-dark" value="検索" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="tab-pane {{ coming_is_active }}" id="coming" role="tabpanel" aria-labelledby="coming-tab">
+                <form action="/search" method="GET">
+                    <div class="input-group mb-3">
+                        <input type="text" name="query" class="form-control" placeholder="keywords" aria-label="..." aria-describedby="button-addon2" value="{% if query %}{{ query }}{% endif %}">
+                        <input type="hidden" name="mode" value="new_coming" />
+                        <div class="input-group-append">
+                            <input type="submit" id="button-addon2" class="btn btn-dark" value="最近を検索" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>        
+    </div>
+</div>
+
+

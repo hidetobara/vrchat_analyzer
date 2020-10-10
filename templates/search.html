@@ -2,56 +2,19 @@
 {% block content %}
 <div class="mx-auto container">
 
-    <div class="card">
-        <h5 class="card-header">VRChat内を検索</h5>
-        <div class="card-body">
-            <form action="/search" method="GET">
-                <div class="input-group mb-3">
-                    <input type="text" name="query" class="form-control" placeholder="keywords" aria-label="..." aria-describedby="button-addon2" value="{% if query %}{{ query }}{% endif %}">
-                    <div class="input-group-append">
-                        <input type="submit" id="button-addon2" class="btn btn-dark" value="検索開始" />
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div><br/>
+    {% include "_search_core.html" %}
 
     {% if error %}
     <big>{{ error }}</big>
     {% endif %}
 
-    {% for w in worlds %}
-    {% if w['col'] == 0 %}
-    <div class='row'>
-    {% endif %}
-        <div class='col-sm-4'>
-            <div class="card">
-                <a target="_blank" href="{{ w['launch_url'] }}"><img class="card-img-top" src="{{ w['thumbnail_image_url'] }}"></a>
-                <div class="card-body">
-                    <h5 class="card-title"><a target="_blank" href="{{ w['launch_url'] }}">{{ w['name'] }}</a></h5>
-                    <h6 class="card-subtitle">{{ w['author_name'] }}</h6>
-                    <hr/>
-                    <p class="card-text">
-                        {% if w['description']|length > 96 %}
-                            {{ w['description'][:96] }}...
-                        {% else %}
-                            {{ w['description'] }}
-                        {% endif %}
-                    </p>
-                </div>
-            </div>
-        </div>
-    {% if w['col'] == 2 or w['is_last'] %}
-    </div><br/>
-    {% endif %}
-
-    {% endfor %}
+    {% include "_searched_worlds.html" %}
 
     {% if query and next %}
     <br/>
     <div class="card">
         <div class="card-body">
-            <a class="btn bnt-lg btn-dark" href="/search?query={{ query }}&offset={{ next }}">I want more</a>
+            <a class="btn bnt-lg btn-dark" href="/search?query={{ query }}&offset={{ next }}&mode={{ mode }}">I want more</a>
         </div>
     </div>
     {% endif %}

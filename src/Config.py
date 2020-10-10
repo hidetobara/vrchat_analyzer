@@ -2,6 +2,7 @@ import os,json
 
 class Config:
     INDEX_PATH = 'tmp/index.tsv'
+    NEW_COMING_PATH = 'tmp/new_coming.tsv'
     CRAWLED_PATH = 'tmp/crawled.json'
     BQ_TABLE = 'vrchat-analyzer.crawled.worlds'
     BUCKET_NAME = 'vrchat-frontend'

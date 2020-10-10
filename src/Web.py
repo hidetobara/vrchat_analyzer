@@ -8,26 +8,27 @@ class Web:
     def __init__(self, config):
         self.config = config
 
-    def exist_index(self):
-        return os.path.exists(Config.INDEX_PATH)
-
-    def download_index(self):
+    def exist_cache(self, path):
+        return os.path.exists(path)
+    def download_cache(self, path):
+        filename = os.path.basename(path)
         client = storage.Client()
         bucket = storage.Bucket(client)
         bucket.name = Config.BUCKET_NAME
-        blob = bucket.blob("index.tsv")
-        blob.download_to_filename(Config.INDEX_PATH)
+        blob = bucket.blob(filename)
+        blob.download_to_filename(path)
 
-    def selecting_index(self, offset=0, limit=10, query=None):
+    def selecting_index(self, path, offset=0, limit=10, query=None):
+        query = "" if query is None else query.lower()
         array = []
         index = -1
-        with open(Config.INDEX_PATH, "r", encoding='utf-8') as f:
+        with open(path, "r", encoding='utf-8') as f:
             is_end = True
             for line in f:
                 index += 1
                 if index < offset:
                     continue
-                if query is None or query in line:
+                if query in line.lower():
                     cells = line.split("\t")
                     ext = json.loads(cells[4])
                     array.append({

@@ -42,6 +42,10 @@ class VrcWorld:
             json.dumps({'thumbnail_image_url': self.thumbnail_image_url})
         ]
 
+    def how_many_days_passed(self):
+        delta = datetime.datetime.now() - self.created_at
+        return delta.days
+
     @staticmethod
     def parse(m):
         i = VrcWorld()

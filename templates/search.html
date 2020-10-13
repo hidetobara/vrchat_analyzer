@@ -8,13 +8,14 @@
     <big>{{ error }}</big>
     {% endif %}
 
+    <br/>
     {% include "_searched_worlds.html" %}
 
-    {% if query and next %}
+    {% if next %}
     <br/>
     <div class="card">
         <div class="card-body">
-            <a class="btn bnt-lg btn-dark" href="/search?query={{ query }}&offset={{ next }}&mode={{ mode }}">I want more</a>
+            <a class="btn bnt-lg btn-dark" href="/search?query={{ query }}&offset={{ next }}&mode={{ mode }}">I want to see more worlds.</a>
         </div>
     </div>
     {% endif %}

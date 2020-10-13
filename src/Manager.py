@@ -1,4 +1,4 @@
-import sys,os,json,re,html,urllib,time
+import sys,os,json,re,html,urllib,time,math
 from datetime import datetime, timedelta
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = './private/vrchat-analyzer-ba2bcb1497e6.json'
@@ -88,16 +88,16 @@ SELECT id,name,_value FROM temp1 WHERE _rank = 1 ORDER BY _value DESC LIMIT {}""
 
         self.upload_bucket(Config.INDEX_PATH)
 
-    def selecting_new_coming_worlds(self, table_path="vrchat-analyzer.crawled.worlds", days=21):
+    def selecting_new_coming_worlds(self, table_path="vrchat-analyzer.crawled.worlds", days=7):
         day_from = datetime.today() - timedelta(days=days)
         sql = """with temp1 as (
 SELECT
-    id,name,
-    ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at) as _rank,
-    (SQRT(visits) + favorites) / SQRT(DATE_DIFF(CURRENT_DATE(), DATE(created_at), DAY)+1) as _value FROM `{}`
+    id, name,
+    ROW_NUMBER() OVER (PARTITION BY id ORDER BY visits DESC) as _rank,
+    visits, favorites, FROM `{}`
     WHERE created_at >= '{}'
 )
-SELECT id,name,_value FROM temp1 WHERE _rank = 1 AND _value > 3 ORDER BY _value DESC""".format(table_path, d2str(day_from))
+SELECT id,name,visits,favorites FROM temp1 WHERE _rank = 1""".format(table_path, d2str(day_from))
         print("sql=", sql)
         for row in self.bq_client.query(sql).result():
             yield row
@@ -108,13 +108,14 @@ SELECT id,name,_value FROM temp1 WHERE _rank = 1 AND _value > 3 ORDER BY _value 
             detail = self.api.get_world_detail(w['id'])
             if detail is None:
                 continue
-            rows.append(detail.to_tsv())
+            rows.append(detail)
             if len(rows) % 10 == 0:
                 print("update=", len(rows))
             time.sleep(1)
+        rows.sort(key=lambda x: (math.sqrt(x.visits) + x.favorites) / math.sqrt(x.how_many_days_passed()+1), reverse=True)
         with open(Config.NEW_COMING_PATH, "w", encoding='utf-8') as f:
             for row in rows:
-                f.write("\t".join(row) + "\n")
+                f.write("\t".join(row.to_tsv()) + "\n")
 
         self.upload_bucket(Config.NEW_COMING_PATH)
 

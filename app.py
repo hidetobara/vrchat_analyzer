@@ -26,7 +26,7 @@ def get_search():
         limit = 12
     if mode == "new_coming":
         worlds, offset_last = web.selecting_index(Config.NEW_COMING_PATH, offset, limit, q)
-        context = { 'title':"Search VRC worlds", 'worlds':worlds, 'query':q, 'next':offset_last, 'coming_is_active':'active', mode:'new_coming' }
+        context = { 'title':"Search VRC worlds", 'worlds':worlds, 'query':q, 'next':offset_last, 'coming_is_active':'active', 'mode':'new_coming' }
         return render_template('search.html', **context)
     else:
         worlds, offset_last = web.selecting_index(Config.INDEX_PATH, offset, limit, q)

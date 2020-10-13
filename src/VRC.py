@@ -59,7 +59,7 @@ class VrcWorld:
             i.updated_at = datetime.datetime.fromisoformat(m['updated_at'][:-5])
             i.release_status = m['releaseStatus']
             i.visits = m['visits']
-            i.favorites = m['favorites']
+            i.favorites = 0 if 'favorites' not in m else m['favorites']
             i.thumbnail_image_url = m['thumbnailImageUrl']
             i.heat = m['heat']
             i.description = m['description']

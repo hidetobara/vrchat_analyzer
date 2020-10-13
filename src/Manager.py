@@ -13,7 +13,7 @@ def ts2str(dt):
 def d2str(dt):
     return dt.strftime("%Y-%m-%d")
 def str2ts(s):
-    return datetime.datetime.fromisoformat(s) # %Y-%m-%d %H:%M:%S
+    return datetime.fromisoformat(s) # %Y-%m-%d %H:%M:%S
 
 class Manager:
     def __init__(self, config):

@@ -80,12 +80,12 @@ class VrcApi:
             url = "{}/auth/user".format(API_BASE)
             response = requests.get(url, params={"apiKey": self.api_key}, headers=self.headers, auth=HTTPBasicAuth(username, password))
             if debug:
-                self.p(["response=", response.text])
+                self.p("response=" + response.text)
                 for key, value in response.cookies.items():
-                    self.p(["cookies[]=", key, value])
+                    self.p("cookies[]=" + str(key) + (value))
             self.auth_token = response.cookies["auth"]
         except Exception as ex:
-            self.p(str(ex))
+            print("ERROR=", str(ex))
 
     def p(self, log):
         self.logs.append(log)
@@ -139,5 +139,11 @@ class VrcApi:
         
     def get_world_detail(self, wrld):
         url = "{}/worlds/{}".format(API_BASE, wrld)
-        response = requests.get(url, params={"apiKey": self.api_key, "authToken": self.auth_token}, headers=self.headers)
-        return VrcWorld.parse(json.loads(response.text))
+        try:
+            response = requests.get(url, params={"apiKey": self.api_key, "authToken": self.auth_token}, headers=self.headers)
+            if response is None or response.text is None:
+                return None
+            return VrcWorld.parse(json.loads(response.text))
+        except Exception as ex:
+            print("ERROR=", str(ex), "wrld=" + wrld)
+            return None

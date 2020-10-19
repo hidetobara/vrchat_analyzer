@@ -72,9 +72,9 @@ SELECT id,name,_value FROM temp1 WHERE _rank = 1 ORDER BY _value DESC LIMIT {}""
         with open(Config.CRAWLED_PATH, 'w') as f:
             json.dump({'last_updated':ts2str(last_updated)}, f)
 
-    def update_index(self):
+    def update_index(self, limit=1500):
         rows = []
-        for w in self.selecting_ranked_worlds(limit=1000):
+        for w in self.selecting_ranked_worlds(limit=limit):
             detail = self.api.get_world_detail(w['id'])
             if detail is None:
                 continue

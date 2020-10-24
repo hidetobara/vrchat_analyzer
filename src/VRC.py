@@ -1,4 +1,4 @@
-import json,datetime,requests,json
+import json,datetime,requests,json,math
 from requests.auth import HTTPBasicAuth
 from src.Config import Config
 
@@ -15,6 +15,7 @@ class VrcWorld:
         self.tags = None
         self.created_at = None
         self.updated_at = None
+        self.crawled_at = None
         self.release_status = None
         self.visits = 0
         self.favorites = 0
@@ -27,7 +28,7 @@ class VrcWorld:
     def to_bq(self):
         return {'id':self.id, 'name':self.name, 'author_id':self.author_id, 'author_name':self.author_name,
             'description':self.description, 'tags':'|'+'|'.join(self.tags)+'|',
-            'created_at':self.created_at.strftime('%Y-%m-%d %H:%M:%S'), 'updated_at':self.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'created_at':self.created_at.strftime('%Y-%m-%d %H:%M:%S'), 'updated_at':self.updated_at.strftime('%Y-%m-%d %H:%M:%S'), 'crawled_at':self.crawled_at.strftime('%Y-%m-%d %H:%M:%S'),
             'visits':self.visits, 'favorites':self.favorites, 'thumbnail_image_url':self.thumbnail_image_url}
     def to_web(self):
         return {'id':self.id, 'name':self.name, 'description':self.description, 'author_name':self.author_name,
@@ -46,8 +47,11 @@ class VrcWorld:
         delta = datetime.datetime.now() - self.created_at
         return delta.days
 
+    def recent_value(self):
+        return (math.sqrt(self.visits) + self.favorites) / math.sqrt(self.how_many_days_passed()+1)
+
     @staticmethod
-    def parse(m):
+    def parse(m, now=None):
         i = VrcWorld()
         try:
             i.name = m['name']
@@ -57,6 +61,7 @@ class VrcWorld:
             i.tags = m['tags']
             i.created_at = datetime.datetime.fromisoformat(m['created_at'][:-5])
             i.updated_at = datetime.datetime.fromisoformat(m['updated_at'][:-5])
+            i.crawled_at = datetime.datetime.now() if now is None else now
             i.release_status = m['releaseStatus']
             i.visits = m['visits']
             i.favorites = 0 if 'favorites' not in m else m['favorites']
@@ -72,6 +77,7 @@ class VrcApi:
     def __init__(self, username, password, debug=False):
         self.logs = []
         self.headers = {'User-Agent': USER_AGENT}
+        self.now = datetime.datetime.now()
         try:
             url = "{}/config".format(API_BASE)
             response = requests.get(url, headers=self.headers)
@@ -143,7 +149,7 @@ class VrcApi:
             response = requests.get(url, params={"apiKey": self.api_key, "authToken": self.auth_token}, headers=self.headers)
             if response is None or response.text is None:
                 return None
-            return VrcWorld.parse(json.loads(response.text))
+            return VrcWorld.parse(json.loads(response.text), self.now)
         except Exception as ex:
             print("ERROR=", str(ex), "wrld=" + wrld)
             return None

@@ -1,5 +1,4 @@
-import sys,os,json,re,html,urllib,time,math
-from datetime import datetime, timedelta
+import sys,os,json,re,html,urllib,time,math,datetime
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = './private/vrchat-analyzer-ba2bcb1497e6.json'
 from google.cloud import bigquery
@@ -13,9 +12,12 @@ def ts2str(dt):
 def d2str(dt):
     return dt.strftime("%Y-%m-%d")
 def str2ts(s):
-    return datetime.fromisoformat(s) # %Y-%m-%d %H:%M:%S
+    return datetime.datetime.fromisoformat(s) # %Y-%m-%d %H:%M:%S
 
 class Manager:
+    INDEX_LIMIT = 2000
+    NEW_COMING_DAY = 21
+
     def __init__(self, config):
         self.config = config
         self.bq_client = bigquery.Client()
@@ -72,15 +74,23 @@ SELECT id,name,_value FROM temp1 WHERE _rank = 1 ORDER BY _value DESC LIMIT {}""
         with open(Config.CRAWLED_PATH, 'w') as f:
             json.dump({'last_updated':ts2str(last_updated)}, f)
 
-    def update_index(self, limit=1500):
+    def insert_world(self, id):
+        detail = self.api.get_world_detail(id)
+        if detail is None:
+            print("Invalid world id=" + id)
+            return
+        self.insert_rows([detail.to_bq()], Config.BQ_TABLE)
+        print("Done")
+
+    def update_index(self):
         rows = []
-        for w in self.selecting_ranked_worlds(limit=limit):
+        for w in self.selecting_ranked_worlds(limit=Manager.INDEX_LIMIT):
             detail = self.api.get_world_detail(w['id'])
             if detail is None:
                 continue
             rows.append(detail.to_tsv())
             if len(rows) % 10 == 0:
-                print("update=", len(rows))
+                print("update=", len(rows), "value=", w['_value'])
             time.sleep(1)
         with open(Config.INDEX_PATH, "w", encoding='utf-8') as f:
             for row in rows:
@@ -88,8 +98,8 @@ SELECT id,name,_value FROM temp1 WHERE _rank = 1 ORDER BY _value DESC LIMIT {}""
 
         self.upload_bucket(Config.INDEX_PATH)
 
-    def selecting_new_coming_worlds(self, table_path="vrchat-analyzer.crawled.worlds", days=7):
-        day_from = datetime.today() - timedelta(days=days)
+    def selecting_new_coming_worlds(self, table_path="vrchat-analyzer.crawled.worlds", days):
+        day_from = datetime.datetime.today() - datetime.timedelta(days=days)
         sql = """with temp1 as (
 SELECT
     id, name,
@@ -104,18 +114,21 @@ SELECT id,name,visits,favorites FROM temp1 WHERE _rank = 1""".format(table_path,
 
     def update_new_coming(self):
         rows = []
-        for w in self.selecting_new_coming_worlds(days=14):
+        for w in self.selecting_new_coming_worlds(days=Manager.NEW_COMING_DAY):
             detail = self.api.get_world_detail(w['id'])
             if detail is None:
                 continue
             rows.append(detail)
             if len(rows) % 10 == 0:
                 print("update=", len(rows))
-            time.sleep(1)
-        rows.sort(key=lambda x: (math.sqrt(x.visits) + x.favorites) / math.sqrt(x.how_many_days_passed()+1), reverse=True)
+            time.sleep(0.3)
+        if len(rows) == 0: return
+
+        rows.sort(key=lambda x: x.recent_value(), reverse=True)
         with open(Config.NEW_COMING_PATH, "w", encoding='utf-8') as f:
             for row in rows:
                 f.write("\t".join(row.to_tsv()) + "\n")
+            print("last=", row, "value=", row.recent_value())
 
         self.upload_bucket(Config.NEW_COMING_PATH)
 

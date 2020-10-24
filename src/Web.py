@@ -1,4 +1,4 @@
-import os,json
+import os,json,datetime,shutil
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = './private/vrchat-analyzer-ba2bcb1497e6.json'
 from google.cloud import storage
@@ -7,9 +7,13 @@ from src.Config import Config
 class Web:
     def __init__(self, config):
         self.config = config
+        self.today = datetime.date.today()
+
+    def extend_cache_date(self):
+        return "." + self.today.strftime("%y%m%d")
 
     def exist_cache(self, path):
-        return os.path.exists(path)
+        return os.path.exists(path + self.extend_cache_date())
     def download_cache(self, path):
         filename = os.path.basename(path)
         client = storage.Client()
@@ -17,6 +21,7 @@ class Web:
         bucket.name = Config.BUCKET_NAME
         blob = bucket.blob(filename)
         blob.download_to_filename(path)
+        shutil.copy(path, path + self.extend_cache_date())
 
     def selecting_index(self, path, offset=0, limit=10, query=None):
         query = "" if query is None else query.lower()

@@ -98,7 +98,7 @@ SELECT id,name,_value FROM temp1 WHERE _rank = 1 ORDER BY _value DESC LIMIT {}""
 
         self.upload_bucket(Config.INDEX_PATH)
 
-    def selecting_new_coming_worlds(self, table_path="vrchat-analyzer.crawled.worlds", days):
+    def selecting_new_coming_worlds(self, days, table_path="vrchat-analyzer.crawled.worlds"):
         day_from = datetime.datetime.today() - datetime.timedelta(days=days)
         sql = """with temp1 as (
 SELECT

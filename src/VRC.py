@@ -44,11 +44,13 @@ class VrcWorld:
         ]
 
     def how_many_days_passed(self):
-        delta = datetime.datetime.now() - self.created_at
-        return delta.days
+        now = datetime.datetime.now()
+        return (now - self.created_at).days + (now - self.updated_at).days
 
-    def recent_value(self):
-        return (math.sqrt(self.visits) + self.favorites) / math.sqrt(self.how_many_days_passed()+1)
+    def fresh_value(self):
+        return (math.sqrt(self.visits) + self.favorites) / math.sqrt(self.how_many_days_passed() + 1)
+    def worth_value(self):
+        return (math.sqrt(self.visits) + math.sqrt(self.favorites)) / (self.how_many_days_passed() + 1)
 
     @staticmethod
     def parse(m, now=None):

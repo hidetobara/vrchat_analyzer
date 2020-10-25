@@ -15,7 +15,7 @@ def str2ts(s):
     return datetime.datetime.fromisoformat(s) # %Y-%m-%d %H:%M:%S
 
 class Manager:
-    INDEX_LIMIT = 2000
+    INDEX_LIMIT = 3000
     NEW_COMING_DAY = 21
 
     def __init__(self, config):
@@ -49,7 +49,7 @@ class Manager:
 SELECT
     id,name,
     ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at) as _rank,
-    (SQRT(visits) + SQRT(favorites)) / (DATE_DIFF(CURRENT_DATE(), DATE(created_at), DAY)+1) as _value FROM `{}`
+    (SQRT(visits) + SQRT(favorites)) / (DATE_DIFF(CURRENT_DATE(), DATE(created_at), DAY) + DATE_DIFF(CURRENT_DATE(), DATE(updated_at), DAY) +1) as _value FROM `{}`
 )
 SELECT id,name,_value FROM temp1 WHERE _rank = 1 ORDER BY _value DESC LIMIT {}""".format(table_path, limit)
         print("sql=", sql)
@@ -91,7 +91,7 @@ SELECT id,name,_value FROM temp1 WHERE _rank = 1 ORDER BY _value DESC LIMIT {}""
             rows.append(detail.to_tsv())
             if len(rows) % 10 == 0:
                 print("update=", len(rows), "value=", w['_value'])
-            time.sleep(1)
+            time.sleep(0.3)
         with open(Config.INDEX_PATH, "w", encoding='utf-8') as f:
             for row in rows:
                 f.write("\t".join(row) + "\n")
@@ -124,11 +124,11 @@ SELECT id,name,visits,favorites FROM temp1 WHERE _rank = 1""".format(table_path,
             time.sleep(0.3)
         if len(rows) == 0: return
 
-        rows.sort(key=lambda x: x.recent_value(), reverse=True)
+        rows.sort(key=lambda x: x.fresh_value(), reverse=True)
         with open(Config.NEW_COMING_PATH, "w", encoding='utf-8') as f:
             for row in rows:
                 f.write("\t".join(row.to_tsv()) + "\n")
-            print("last=", row, "value=", row.recent_value())
+            print("last=", row, "value=", row.fresh_value())
 
         self.upload_bucket(Config.NEW_COMING_PATH)
 

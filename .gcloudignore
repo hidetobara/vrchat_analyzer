@@ -6,6 +6,7 @@
 *.pyd
 *.bak
 
+tmp
 __pycache__
 
 README.md

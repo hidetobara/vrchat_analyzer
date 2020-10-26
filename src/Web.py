@@ -1,4 +1,5 @@
 import os,json,datetime,shutil
+from flask import Flask, render_template, request, send_from_directory, redirect, jsonify
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = './private/vrchat-analyzer-ba2bcb1497e6.json'
 from google.cloud import storage
@@ -7,11 +8,10 @@ from src.Config import Config
 class Web:
     def __init__(self, config):
         self.config = config
-        self.today = datetime.date.today()
 
     def extend_cache_date(self):
-        return "." + self.today.strftime("%y%m%d")
-
+        today = datetime.date.today() - datetime.timedelta(hours=6)
+        return "." + today.strftime("%y%m%d")
     def exist_cache(self, path):
         return os.path.exists(path + self.extend_cache_date())
     def download_cache(self, path):
@@ -22,6 +22,59 @@ class Web:
         blob = bucket.blob(filename)
         blob.download_to_filename(path)
         shutil.copy(path, path + self.extend_cache_date())
+
+    def get_locale(self):
+        locale = 'en'
+        languages = request.headers.get('Accept-Language').split(',')
+        for language in languages:
+            locale_long = language.split(';')[0]
+            locale = locale_long.split('-')[0]
+            break
+        if locale not in ['ja', 'en']:
+            locale = 'en'
+        return locale.lower()
+
+    def get_text(self, key):
+        text = ''
+        locale = self.get_locale()
+        keys = key.split('.')
+        path = '/app/lang/'+ locale +'/'+ '/'.join(keys[:-1]) +'.json'
+        try:
+            with open(path) as f:
+                data = json.load(f)
+                text = data[keys[-1]]
+        except:
+            pass
+        return text
+
+    def prepare(self):
+        if not self.exist_cache(Config.INDEX_PATH):
+            self.download_cache(Config.INDEX_PATH)
+        if not self.exist_cache(Config.NEW_COMING_PATH):
+            self.download_cache(Config.NEW_COMING_PATH)
+
+    def get_index(self):
+        worlds, offset_last = self.selecting_index(Config.NEW_COMING_PATH, 0, 12)
+        context = { 'title':"Search VRC worlds", 'all_is_active':'active', 'worlds':worlds }
+        return render_template('top.html', **context)
+
+    def get_search(self):
+        q = request.args.get('query')
+        offset = request.args.get('offset', type=int)
+        mode = request.args.get('mode')
+        if type(offset) is int:
+            limit = 48
+        else:
+            offset = 0
+            limit = 12
+        if mode == "new_coming":
+            worlds, offset_last = self.selecting_index(Config.NEW_COMING_PATH, offset, limit, q)
+            context = { 'title':"Search VRC worlds", 'worlds':worlds, 'query':q, 'next':offset_last, 'coming_is_active':'active', 'mode':'new_coming' }
+            return render_template('search.html', **context)
+        else:
+            worlds, offset_last = self.selecting_index(Config.INDEX_PATH, offset, limit, q)
+            context = { 'title':"Search VRC worlds", 'worlds':worlds, 'query':q, 'next':offset_last, 'all_is_active':'active' }
+            return render_template('search.html', **context)
 
     def selecting_index(self, path, offset=0, limit=10, query=None):
         query = "" if query is None else query.lower()

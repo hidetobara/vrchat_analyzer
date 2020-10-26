@@ -14,7 +14,7 @@ def utility_processor():
 
 @app.route('/', methods=['GET'])
 def get_index():
-    return web.get_search()
+    return web.get_index()
 
 @app.route('/search', methods=['GET'])
 def get_search():

@@ -1,6 +1,6 @@
 import json,datetime,requests,json,math
 from requests.auth import HTTPBasicAuth
-from src.Config import Config
+from src.Config import Config, ts2str, str2ts
 
 API_BASE = "https://api.vrchat.cloud/api/1"
 USER_AGENT = "search-bot"
@@ -16,7 +16,7 @@ class VrcWorld:
         self.created_at = None
         self.updated_at = None
         self.crawled_at = None
-        self.release_status = None
+        self.release_status = None # hidden if the world is deleted
         self.visits = 0
         self.favorites = 0
         self.thumbnail_image_url = None
@@ -61,8 +61,8 @@ class VrcWorld:
             i.author_name = m['authorName']
             i.author_id = m['authorId']
             i.tags = m['tags']
-            i.created_at = datetime.datetime.fromisoformat(m['created_at'][:-5])
-            i.updated_at = datetime.datetime.fromisoformat(m['updated_at'][:-5])
+            i.created_at = str2ts(m['created_at'][:-5])
+            i.updated_at = str2ts(m['updated_at'][:-5])
             i.crawled_at = datetime.datetime.now() if now is None else now
             i.release_status = m['releaseStatus']
             i.visits = m['visits']
@@ -74,6 +74,9 @@ class VrcWorld:
             print("ERROR=", ex, m)
             return None
         return i
+
+    def __str__(self):
+        return json.dumps({k: ts2str(v) if type(v) is datetime.datetime else v for k,v in self.__dict__.items()})
 
 class VrcApi:
     def __init__(self, username, password, debug=False):

@@ -13,6 +13,7 @@ docker images -aq | xargs docker rmi
 # Deploy
 docker build -t gcr.io/vrchat-analyzer/crawler .
 gcloud docker -- push gcr.io/vrchat-analyzer/crawler
+docker image push gcr.io/vrchat-analyzer/crawler:latest
 
 # Operation
 ## batch.py
@@ -20,3 +21,6 @@ Daily, Hourly batch
 
 ## app.py
 Web page.
+
+# Reference
+https://cloud.google.com/cloud-build/docs/building/build-containers?hl=ja

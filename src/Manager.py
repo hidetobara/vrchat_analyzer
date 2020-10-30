@@ -1,18 +1,10 @@
 import sys,os,json,re,html,urllib,time,math,datetime
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = './private/vrchat-analyzer-ba2bcb1497e6.json'
-from google.cloud import bigquery
 from google.cloud import storage
-from src.Config import Config
+from src.Config import Config, ts2str, d2str, str2ts
 from src.VRC import VrcApi
-
-
-def ts2str(dt):
-    return dt.strftime("%Y-%m-%d %H:%M:%S")
-def d2str(dt):
-    return dt.strftime("%Y-%m-%d")
-def str2ts(s):
-    return datetime.datetime.fromisoformat(s) # %Y-%m-%d %H:%M:%S
+from src.BQ import BqClient
 
 class Manager:
     INDEX_LIMIT = 3000
@@ -20,20 +12,8 @@ class Manager:
 
     def __init__(self, config):
         self.config = config
-        self.bq_client = bigquery.Client()
+        self.bq_client = BqClient()
         self.api = VrcApi(config.get('USERNAME'), config.get("PASSWORD"))
-
-    def insert_rows(self, rows, table_path):
-        if len(rows) == 0:
-            return
-        cells = table_path.split('.')
-        set_name = cells[-2]
-        table_name = cells[-1]
-        dataset_ref = self.bq_client.dataset(set_name)
-        table_ref = dataset_ref.table(table_name)
-        table = self.bq_client.get_table(table_ref)
-        r = self.bq_client.insert_rows_json(table, rows)
-        print("insert_logs=", r, "len=", len(rows))
 
     def upload_bucket(self, path):
         filename = os.path.basename(path)
@@ -43,18 +23,6 @@ class Manager:
         bucket.name = Config.BUCKET_NAME
         blob = bucket.blob(filename)
         blob.upload_from_filename(path)
-
-    def selecting_ranked_worlds(self, table_path="vrchat-analyzer.crawled.worlds", limit=100):
-        sql = """with temp1 as (
-SELECT
-    id,name,
-    ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at) as _rank,
-    (SQRT(visits) + SQRT(favorites)) / (DATE_DIFF(CURRENT_DATE(), DATE(created_at), DAY) + DATE_DIFF(CURRENT_DATE(), DATE(updated_at), DAY) +1) as _value FROM `{}`
-)
-SELECT id,name,_value FROM temp1 WHERE _rank = 1 ORDER BY _value DESC LIMIT {}""".format(table_path, limit)
-        print("sql=", sql)
-        for row in self.bq_client.query(sql).result():
-            yield row
 
     def crawl_worlds(self):
         last_updated = None
@@ -69,22 +37,29 @@ SELECT id,name,_value FROM temp1 WHERE _rank = 1 ORDER BY _value DESC LIMIT {}""
             worlds.extend(rows)
         time.sleep(1)
         worlds.extend(self.api.get_familiar_worlds())
-        self.insert_rows(list(map(lambda x: x.to_bq(), worlds)), Config.BQ_TABLE)
+        self.bq_client.insert_rows(list(map(lambda x: x.to_bq(), worlds)))
 
         with open(Config.CRAWLED_PATH, 'w') as f:
             json.dump({'last_updated':ts2str(last_updated)}, f)
 
-    def insert_world(self, id):
+    def insert_world(self, id, force):
+        if not force:
+            rows = self.bq_client.select_world(id)
+            if len(rows) > 0:
+                print("Already this worlds exists", rows[-1])
+                return
+
         detail = self.api.get_world_detail(id)
+        print("detail=", detail)
         if detail is None:
             print("Invalid world id=" + id)
             return
-        self.insert_rows([detail.to_bq()], Config.BQ_TABLE)
+        self.bq_client.insert_rows([detail.to_bq()])
         print("Done")
 
     def update_index(self):
         rows = []
-        for w in self.selecting_ranked_worlds(limit=Manager.INDEX_LIMIT):
+        for w in self.bq_client.selecting_ranked_worlds(limit=Manager.INDEX_LIMIT):
             detail = self.api.get_world_detail(w['id'])
             if detail is None:
                 continue
@@ -98,23 +73,9 @@ SELECT id,name,_value FROM temp1 WHERE _rank = 1 ORDER BY _value DESC LIMIT {}""
 
         self.upload_bucket(Config.INDEX_PATH)
 
-    def selecting_new_coming_worlds(self, days, table_path="vrchat-analyzer.crawled.worlds"):
-        day_from = datetime.datetime.today() - datetime.timedelta(days=days)
-        sql = """with temp1 as (
-SELECT
-    id, name,
-    ROW_NUMBER() OVER (PARTITION BY id ORDER BY visits DESC) as _rank,
-    visits, favorites, FROM `{}`
-    WHERE created_at >= '{}'
-)
-SELECT id,name,visits,favorites FROM temp1 WHERE _rank = 1""".format(table_path, d2str(day_from))
-        print("sql=", sql)
-        for row in self.bq_client.query(sql).result():
-            yield row
-
     def update_new_coming(self):
         rows = []
-        for w in self.selecting_new_coming_worlds(days=Manager.NEW_COMING_DAY):
+        for w in self.bq_client.selecting_new_coming_worlds(days=Manager.NEW_COMING_DAY):
             detail = self.api.get_world_detail(w['id'])
             if detail is None:
                 continue

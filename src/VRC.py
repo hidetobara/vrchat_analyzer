@@ -21,6 +21,7 @@ class VrcWorld:
         self.favorites = 0
         self.thumbnail_image_url = None
         self.heat = 0
+        self.platforms = None
 
     def is_public(self):
         return self.release_status == 'public'
@@ -70,6 +71,10 @@ class VrcWorld:
             i.thumbnail_image_url = m['thumbnailImageUrl']
             i.heat = m['heat']
             i.description = m['description']
+            i.platforms = []
+            for p in m['unityPackages']:
+                i.platforms.append(p['platform'])
+            i.platforms = list(set(i.platforms))
         except Exception as ex:
             print("ERROR=", ex, m)
             return None

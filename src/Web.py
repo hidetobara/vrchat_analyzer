@@ -1,9 +1,10 @@
-import os,json,datetime,shutil
+import os,json,datetime,shutil,glob
+from pathlib import Path
 from flask import Flask, render_template, request, send_from_directory, redirect, jsonify
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = './private/vrchat-analyzer-ba2bcb1497e6.json'
 from google.cloud import storage
-from src.Config import Config
+from src.Config import Config, epoch_to_datetime, dt2str
 
 class Web:
     def __init__(self, config):
@@ -54,6 +55,7 @@ class Web:
             self.download_cache(Config.NEW_COMING_PATH)
 
     def get_index(self):
+        self.prepare()
         worlds, offset_last = self.selecting_index(Config.NEW_COMING_PATH, 0, 12)
         context = { 'title':"Search VRC worlds", 'all_is_active':'active', 'worlds':worlds }
         return render_template('top.html', **context)
@@ -102,3 +104,17 @@ class Web:
         if len(array) > 0:
             array[-1]['is_last'] = True
         return array, None if is_end else index + 1
+
+    def get_tmp_info(self):
+        data = []
+        for p in glob.glob('/app/tmp/*'):
+            path = Path(p)
+            data.append({
+                'path': p,
+                'size': os.path.getsize(path),
+                'created_at': dt2str(epoch_to_datetime(os.path.getctime(path)))
+            })
+        return jsonify(data)
+
+
+

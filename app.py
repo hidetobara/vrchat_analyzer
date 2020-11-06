@@ -1,6 +1,7 @@
 import os,sys,traceback,json
 from flask import Flask, render_template, request, send_from_directory, redirect, jsonify
 
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = './private/vrchat-analyzer-ba2bcb1497e6.json'
 from src.Config import Config
 from src.Web import Web
 
@@ -19,6 +20,10 @@ def get_index():
 @app.route('/search', methods=['GET'])
 def get_search():
     return web.get_search()
+
+@app.route('/tmp_info', methods=['GET'])
+def get_tmp_info():
+    return web.get_tmp_info()
 
 if __name__ == "__main__":
     web.prepare()

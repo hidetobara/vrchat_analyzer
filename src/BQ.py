@@ -1,7 +1,7 @@
 import sys,os,json,datetime
 
 from google.cloud import bigquery
-from src.Config import Config, ts2str, d2str, str2ts
+from src.Config import Config, dt2str, d2str, str2ts
 
 class BqClient:
     def __init__(self):

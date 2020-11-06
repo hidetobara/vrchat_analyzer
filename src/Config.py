@@ -1,11 +1,14 @@
-import os,json,datetime
+import os,json,datetime,time
 
-def ts2str(dt):
+def dt2str(dt):
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 def d2str(dt):
     return dt.strftime("%Y-%m-%d")
 def str2ts(s):
     return datetime.datetime.fromisoformat(s) # %Y-%m-%d %H:%M:%S
+
+def epoch_to_datetime(epoch):
+    return datetime.datetime.fromtimestamp(epoch)
 
 class Config:
     INDEX_PATH = 'tmp/index.tsv'

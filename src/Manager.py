@@ -1,8 +1,7 @@
 import sys,os,json,re,html,urllib,time,math,datetime
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = './private/vrchat-analyzer-ba2bcb1497e6.json'
 from google.cloud import storage
-from src.Config import Config, ts2str, d2str, str2ts
+from src.Config import Config, dt2str, d2str, str2ts
 from src.VRC import VrcApi
 from src.BQ import BqClient
 
@@ -40,7 +39,7 @@ class Manager:
         self.bq_client.insert_rows(list(map(lambda x: x.to_bq(), worlds)))
 
         with open(Config.CRAWLED_PATH, 'w') as f:
-            json.dump({'last_updated':ts2str(last_updated)}, f)
+            json.dump({'last_updated':dt2str(last_updated)}, f)
 
     def insert_world(self, id, force):
         if not force:

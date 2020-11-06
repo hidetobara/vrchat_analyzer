@@ -1,6 +1,6 @@
 import json,datetime,requests,json,math
 from requests.auth import HTTPBasicAuth
-from src.Config import Config, ts2str, str2ts
+from src.Config import Config, dt2str, str2ts
 
 API_BASE = "https://api.vrchat.cloud/api/1"
 USER_AGENT = "search-bot"
@@ -81,7 +81,7 @@ class VrcWorld:
         return i
 
     def __str__(self):
-        return json.dumps({k: ts2str(v) if type(v) is datetime.datetime else v for k,v in self.__dict__.items()})
+        return json.dumps({k: dt2str(v) if type(v) is datetime.datetime else v for k,v in self.__dict__.items()})
 
 class VrcApi:
     def __init__(self, username, password, debug=False):

@@ -1,25 +1,24 @@
-# linter:
+linter:
 # # https://help.sider.review/getting-started/custom-configuration
 
-#   # https://help.sider.review/tools/python/flake8
-#   flake8:
-#     plugins:
-#       - flake8-bandit
-#       - flake8-builtins==1.4.1
-#       - flake8-mypy>=17.3.3
+  # https://help.sider.review/tools/python/flake8
+  flake8:
+    plugins:
+      - flake8-bandit
+      - flake8-builtins==1.4.1
+      - flake8-mypy>=17.3.3
 
-#   # https://help.sider.review/tools/others/misspell
-#   misspell:
-#     exclude:
-#       - vendor
-#       - "**/*.min.js"
-#       - exclude_file.rb
-#     targets:
-#       - target_directory
-#       - another_target_directory/foo.rb
-#       - bar.rb
-#     locale: UK
-#     ignore: center,behavior
+  # https://help.sider.review/tools/others/misspell
+  misspell:
+    exclude:
+      - tmp
+      - tests
+      - exclude_file.rb
+    targets:
+      - src
+      - templates
+    locale: UK
+    ignore: center,behavior
 
 #   # https://help.sider.review/tools/shellscript/shellcheck
 #   shellcheck:

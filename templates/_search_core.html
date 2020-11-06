@@ -16,7 +16,7 @@
                     <div class="input-group mb-3">
                         <input type="text" name="query" class="form-control" placeholder="keywords" aria-label="..." aria-describedby="button-addon2" value="{% if query %}{{ query }}{% endif %}">
                         <div class="input-group-append">
-                            <input type="submit" id="button-addon2" class="btn btn-dark" value="検索" />
+                            <input type="submit" id="button-addon2" class="btn btn-dark" value="{{ _('search.search') }}" />
                         </div>
                     </div>
                 </form>
@@ -27,7 +27,7 @@
                         <input type="text" name="query" class="form-control" placeholder="keywords" aria-label="..." aria-describedby="button-addon2" value="{% if query %}{{ query }}{% endif %}">
                         <input type="hidden" name="mode" value="new_coming" />
                         <div class="input-group-append">
-                            <input type="submit" id="button-addon2" class="btn btn-dark" value="最近を検索" />
+                            <input type="submit" id="button-addon2" class="btn btn-dark" value="{{ _('search.recent_search') }}" />
                         </div>
                     </div>
                 </form>

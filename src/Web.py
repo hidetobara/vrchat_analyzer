@@ -1,4 +1,4 @@
-import os,json,datetime,shutil,glob
+import os,json,datetime,shutil,glob,re
 from pathlib import Path
 from flask import Flask, render_template, request, send_from_directory, redirect, jsonify
 
@@ -56,7 +56,7 @@ class Web:
 
     def get_index(self):
         self.prepare()
-        worlds, offset_last = self.selecting_index(Config.NEW_COMING_PATH, 0, 12)
+        worlds, offset_last = self.select_index(Config.NEW_COMING_PATH, 0, 12)
         context = { 'title':"Search VRC worlds", 'all_is_active':'active', 'worlds':worlds }
         return render_template('top.html', **context)
 
@@ -64,22 +64,26 @@ class Web:
         q = request.args.get('query')
         offset = request.args.get('offset', type=int)
         mode = request.args.get('mode')
+        if q:
+            q = re.sub('[ 　]+', ' ', q)
         if type(offset) is int:
             limit = 48
         else:
             offset = 0
             limit = 12
+        
         if mode == "new_coming":
-            worlds, offset_last = self.selecting_index(Config.NEW_COMING_PATH, offset, limit, q)
+            worlds, offset_last = self.select_index(Config.NEW_COMING_PATH, offset, limit, q)
             context = { 'title':"Search VRC worlds", 'worlds':worlds, 'query':q, 'next':offset_last, 'coming_is_active':'active', 'mode':'new_coming' }
             return render_template('search.html', **context)
         else:
-            worlds, offset_last = self.selecting_index(Config.INDEX_PATH, offset, limit, q)
+            worlds, offset_last = self.select_index(Config.INDEX_PATH, offset, limit, q)
             context = { 'title':"Search VRC worlds", 'worlds':worlds, 'query':q, 'next':offset_last, 'all_is_active':'active' }
             return render_template('search.html', **context)
 
-    def selecting_index(self, path, offset=0, limit=10, query=None):
+    def select_index(self, path, offset=0, limit=10, query=None):
         query = "" if query is None else query.lower()
+        keys = query.split(' ')
         array = []
         index = -1
         with open(path, "r", encoding='utf-8') as f:
@@ -88,7 +92,12 @@ class Web:
                 index += 1
                 if index < offset:
                     continue
-                if query in line.lower():
+                hit = True
+                for key in keys:
+                    if key not in line.lower():
+                        hit = False
+                        break
+                if hit:
                     cells = line.split("\t")
                     ext = json.loads(cells[4])
                     array.append({

@@ -2,7 +2,7 @@ import sys,os,json,re,html,urllib,time,math,datetime
 
 from google.cloud import storage
 from src.Config import Config, dt2str, d2str, str2ts
-from src.VRC import VrcApi
+from src.VRC import VrcApi, VrcWorld
 from src.BQ import BqClient
 
 class Manager:
@@ -58,37 +58,53 @@ class Manager:
 
     def update_index(self):
         rows = []
+        deletes = []
         for w in self.bq_client.selecting_ranked_worlds(limit=Manager.INDEX_LIMIT):
             detail = self.api.get_world_detail(w['id'])
             if detail is None:
+                detail = VrcWorld.bq_parse(w)
+                if detail:
+                    detail.set_deleted()
+                    deletes.append(detail)
                 continue
-            rows.append(detail.to_tsv())
-            if len(rows) % 10 == 0:
+            rows.append(detail)
+            if len(rows) % 50 == 0:
                 print("update=", len(rows), "value=", w['_value'])
             time.sleep(0.3)
+
         with open(Config.INDEX_PATH, "w", encoding='utf-8') as f:
             for row in rows:
-                f.write("\t".join(row) + "\n")
-
+                f.write("\t".join(row.to_tsv()) + "\n")
         self.upload_bucket(Config.INDEX_PATH)
 
+        if len(deletes) > 0:
+            print("deltes[-1]=", deletes[-1])
+            self.bq_client.insert_rows(list(map(lambda x: x.to_bq(), deletes)))
+
     def update_new_coming(self):
-        rows = []
+        news = []
+        deletes = []
         for w in self.bq_client.selecting_new_coming_worlds(days=Manager.NEW_COMING_DAY):
             detail = self.api.get_world_detail(w['id'])
             if detail is None:
+                detail = VrcWorld.bq_parse(w)
+                if detail:
+                    detail.set_deleted()
+                    deletes.append(detail)
                 continue
-            rows.append(detail)
-            if len(rows) % 10 == 0:
-                print("update=", len(rows))
+            news.append(detail)
+            if len(news) % 50 == 0:
+                print("update=", len(news))
             time.sleep(0.3)
-        if len(rows) == 0: return
 
-        rows.sort(key=lambda x: x.fresh_value(), reverse=True)
-        with open(Config.NEW_COMING_PATH, "w", encoding='utf-8') as f:
-            for row in rows:
-                f.write("\t".join(row.to_tsv()) + "\n")
-            print("last=", row, "value=", row.fresh_value())
-
-        self.upload_bucket(Config.NEW_COMING_PATH)
+        if len(news) > 0:
+            news.sort(key=lambda x: x.fresh_value(), reverse=True)
+            with open(Config.NEW_COMING_PATH, "w", encoding='utf-8') as f:
+                for row in news:
+                    f.write("\t".join(row.to_tsv()) + "\n")
+            print("news[-1]=", row, "value=", row.fresh_value())
+            self.upload_bucket(Config.NEW_COMING_PATH)
+        if len(deletes) > 0:
+            print("deltes[-1]=", deletes[-1])
+            self.bq_client.insert_rows(list(map(lambda x: x.to_bq(), deletes)))
 

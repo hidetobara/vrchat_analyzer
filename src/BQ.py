@@ -23,11 +23,12 @@ class BqClient:
     def selecting_ranked_worlds(self, limit=100):
         sql = """with temp1 as (
 SELECT
-    id,name,
-    ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at) as _rank,
+    id, name, author_id, author_name, created_at, updated_at, release_status,
+    ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at DESC) as _rank,
     (SQRT(visits) + SQRT(favorites)) / (DATE_DIFF(CURRENT_DATE(), DATE(created_at), DAY) + DATE_DIFF(CURRENT_DATE(), DATE(updated_at), DAY) +1) as _value FROM `{}`
 )
-SELECT id,name,_value FROM temp1 WHERE _rank = 1 ORDER BY _value DESC LIMIT {}""".format(self.table_path, limit)
+SELECT id,name,author_id,author_name,created_at,updated_at,_value FROM temp1 WHERE _rank = 1 AND (release_status IS NULL OR release_status != 'hidden')
+ORDER BY _value DESC LIMIT {}""".format(self.table_path, limit)
         print("sql=", sql)
         for row in self.bq_client.query(sql).result():
             yield row
@@ -36,12 +37,12 @@ SELECT id,name,_value FROM temp1 WHERE _rank = 1 ORDER BY _value DESC LIMIT {}""
         day_from = datetime.datetime.today() - datetime.timedelta(days=days)
         sql = """with temp1 as (
 SELECT
-    id, name,
-    ROW_NUMBER() OVER (PARTITION BY id ORDER BY visits DESC) as _rank,
+    id, name, author_id, author_name, created_at, updated_at, release_status,
+    ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at DESC) as _rank,
     visits, favorites, FROM `{}`
     WHERE created_at >= '{}'
 )
-SELECT id,name,visits,favorites FROM temp1 WHERE _rank = 1""".format(self.table_path, d2str(day_from))
+SELECT id,name,author_id,author_name,created_at,updated_at,visits,favorites FROM temp1 WHERE _rank = 1 AND (release_status IS NULL OR release_status != 'hidden')""".format(self.table_path, d2str(day_from))
         print("sql=", sql)
         for row in self.bq_client.query(sql).result():
             yield row

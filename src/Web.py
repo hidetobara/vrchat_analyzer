@@ -61,6 +61,7 @@ class Web:
         return render_template('top.html', **context)
 
     def get_search(self):
+        self.prepare()
         q = request.args.get('query')
         offset = request.args.get('offset', type=int)
         mode = request.args.get('mode')

@@ -12,7 +12,7 @@ class VrcWorld:
         self.description = None
         self.author_name = None
         self.author_id = None
-        self.tags = None
+        self.tags = []
         self.created_at = None
         self.updated_at = None
         self.crawled_at = None
@@ -25,6 +25,12 @@ class VrcWorld:
 
     def is_public(self):
         return self.release_status == 'public'
+
+    def set_deleted(self):
+        now = datetime.datetime.now()
+        self.updated_at = now
+        self.crawled_at = now
+        self.release_status = 'hidden'
 
     def to_bq(self):
         return {'id':self.id, 'name':self.name, 'author_id':self.author_id, 'author_name':self.author_name,
@@ -54,29 +60,40 @@ class VrcWorld:
         return (math.sqrt(self.visits) + math.sqrt(self.favorites)) / (self.how_many_days_passed() + 1)
 
     @staticmethod
-    def parse(m, now=None):
+    def bq_parse(m):
         i = VrcWorld()
+        i.name = m.get('name')
+        i.id = m.get('id')
+        i.author_name = m.get('author_name')
+        i.author_id = m.get('author_id')
+        i.created_at = m.get('created_at')
+        i.updated_at = m.get('updated_at')
+        return i
+
+    @staticmethod
+    def parse(m, now=None):
         try:
+            i = VrcWorld()
             i.name = m['name']
             i.id = m['id']
             i.author_name = m['authorName']
             i.author_id = m['authorId']
+            i.created_at = m['created_at'] if type(m['created_at']) is datetime.datetime else str2ts(m['created_at'][:-5])
+            i.updated_at = m['updated_at'] if type(m['updated_at']) is datetime.datetime else str2ts(m['updated_at'][:-5])
             i.tags = m['tags']
-            i.created_at = str2ts(m['created_at'][:-5])
-            i.updated_at = str2ts(m['updated_at'][:-5])
-            i.crawled_at = datetime.datetime.now() if now is None else now
             i.release_status = m['releaseStatus']
             i.visits = m['visits']
             i.favorites = 0 if 'favorites' not in m else m['favorites']
             i.thumbnail_image_url = m['thumbnailImageUrl']
             i.heat = m['heat']
             i.description = m['description']
+            i.crawled_at = datetime.datetime.now() if now is None else now
             i.platforms = []
             for p in m['unityPackages']:
                 i.platforms.append(p['platform'])
             i.platforms = list(set(i.platforms))
         except Exception as ex:
-            print("ERROR=", ex, m)
+            print("ERROR_PARSE=", ex, m)
             return None
         return i
 

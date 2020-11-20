@@ -1,6 +1,8 @@
 {
+    "title": "Search in VRChat",
+    "trends": "Recent trends",
     "search": "Search",
-    "recent_search": "Search recently (last 3 weeks)",
+    "recent_search": "Search recently (last one month)",
     "all": "All",
     "recent": "Recent",
     "more": "I want to see more"

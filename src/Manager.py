@@ -6,8 +6,8 @@ from src.VRC import VrcApi, VrcWorld
 from src.BQ import BqClient
 
 class Manager:
-    INDEX_LIMIT = 3000
-    NEW_COMING_DAY = 21
+    INDEX_LIMIT = 5000
+    NEW_COMING_DAY = 28
 
     def __init__(self, config):
         self.config = config
@@ -70,7 +70,7 @@ class Manager:
             rows.append(detail)
             if len(rows) % 50 == 0:
                 print("update=", len(rows), "value=", w['_value'])
-            time.sleep(0.3)
+            time.sleep(0.5)
 
         with open(Config.INDEX_PATH, "w", encoding='utf-8') as f:
             for row in rows:

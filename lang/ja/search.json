@@ -1,6 +1,8 @@
 {
+    "title": "VRChat 内を検索",
+    "trends": "最近の流行",
     "search": "検索",
-    "recent_search": "最近を検索(3週間)",
+    "recent_search": "最近を検索(1ヶ月)",
     "all": "すべて",
     "recent": "最近",
     "more": "続けて検索"

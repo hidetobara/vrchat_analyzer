@@ -14,8 +14,7 @@ python3 -m unittest tests/test_*
 docker images -aq | xargs docker rmi
 
 # Deploy
-docker build -t gcr.io/vrchat-analyzer/crawler .
-# gcloud docker -- push gcr.io/vrchat-analyzer/crawler # deprecated
+## gcloud docker -- push gcr.io/vrchat-analyzer/crawler # deprecated
 docker image push gcr.io/vrchat-analyzer/crawler:latest
 
 # Operation

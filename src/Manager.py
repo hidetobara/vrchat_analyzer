@@ -4,6 +4,7 @@ from google.cloud import storage
 from src.Config import Config, dt2str, d2str, str2ts
 from src.VRC import VrcApi, VrcWorld
 from src.BQ import BqClient
+from src.Filter import SpreadSheet
 
 class Manager:
     INDEX_LIMIT = 5000
@@ -107,4 +108,8 @@ class Manager:
         if len(deletes) > 0:
             print("deltes[-1]=", deletes[-1])
             self.bq_client.insert_rows(list(map(lambda x: x.to_bq(), deletes)))
+    
+    def import_filter(self):
+        ss = SpreadSheet()
+        ss.test()
 

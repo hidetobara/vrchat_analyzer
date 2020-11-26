@@ -4,7 +4,7 @@ from google.cloud import storage
 from src.Config import Config, dt2str, d2str, str2ts
 from src.VRC import VrcApi, VrcWorld
 from src.BQ import BqClient
-from src.Filter import SpreadSheet
+from src.Filter import Filter
 
 class Manager:
     INDEX_LIMIT = 5000
@@ -14,6 +14,8 @@ class Manager:
         self.config = config
         self.bq_client = BqClient()
         self.api = VrcApi(config.get('USERNAME'), config.get("PASSWORD"))
+        self.filter = Filter()
+        self.filter.import_from_spread_sheet(config.get('SHEET_KEY'))
 
     def upload_bucket(self, path):
         filename = os.path.basename(path)
@@ -57,16 +59,20 @@ class Manager:
         self.bq_client.insert_rows([detail.to_bq()])
         print("Done")
 
-    def update_index(self):
+    def update_index(self, limit=None):
+        limit = Manager.INDEX_LIMIT if limit is None else limit
         rows = []
         deletes = []
-        for w in self.bq_client.selecting_ranked_worlds(limit=Manager.INDEX_LIMIT):
+        for w in self.bq_client.selecting_ranked_worlds(limit=limit):
             detail = self.api.get_world_detail(w['id'])
             if detail is None:
                 detail = VrcWorld.bq_parse(w)
                 if detail:
                     detail.set_deleted()
                     deletes.append(detail)
+                continue
+            if not self.filter.is_passed(detail):
+                print("BAN=", detail)
                 continue
             rows.append(detail)
             if len(rows) % 50 == 0:
@@ -93,6 +99,9 @@ class Manager:
                     detail.set_deleted()
                     deletes.append(detail)
                 continue
+            if not self.filter.is_passed(detail):
+                print("BAN=", detail)
+                continue
             news.append(detail)
             if len(news) % 50 == 0:
                 print("update=", len(news))
@@ -108,8 +117,3 @@ class Manager:
         if len(deletes) > 0:
             print("deltes[-1]=", deletes[-1])
             self.bq_client.insert_rows(list(map(lambda x: x.to_bq(), deletes)))
-    
-    def import_filter(self):
-        ss = SpreadSheet()
-        ss.test()
-

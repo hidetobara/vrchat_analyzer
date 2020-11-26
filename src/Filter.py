@@ -8,12 +8,12 @@ class FilterOption:
         self.key = key
         self.value = value
     def is_matched(self, w):
-        if self.key = 'id':
+        if self.key == 'id':
             return w.id == self.value
-        if self.key = 'author_id':
+        if self.key == 'author_id':
             return w.author_id == self.value
-        if self.key = 'name_or_description':
-            return self.value in w.name or self.value in w.description
+        if self.key == 'name_or_description':
+            return (w.name and self.value in w.name) or (w.description and self.value in w.description)
         return False
 
 class Filter:
@@ -42,12 +42,12 @@ class Filter:
     def import_from_spread_sheet(self, key):
         ss = SpreadSheet(key)
         for row in ss.get_blacks():
-            if len(row) >= 2: continue
+            if len(row) < 2: continue
             self.add_black(row[0], row[1])
         for row in ss.get_whites():
-            if len(row) >= 2: continue
-            self.add(self.add_white(row[0], row[1]))
-
+            if len(row) < 2: continue
+            self.add_white(row[0], row[1])
+        print("KEY=", key, "BLACKS=", len(self.blacks), "WHITES=", len(self.whites))
 
 class SpreadSheet:
     def __init__(self, key):

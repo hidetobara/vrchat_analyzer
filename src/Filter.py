@@ -1,20 +1,35 @@
-import gspread
-import json
+import gspread,json,re
 from oauth2client.service_account import ServiceAccountCredentials 
 
 
 class FilterOption:
+    ID = 'id'
+    AUTHOR = 'author_id'
+    TEXT = 'name_or_description' # for name or description
+    RE_TEXT = 'regular_expression'
+
     def __init__(self, key, value):
         self.key = key
-        self.value = value
+        self.value = None
+        self.pattern = None
+        if key != FilterOption.RE_TEXT:
+            self.value = value
+        else:
+            self.pattern = re.compile(value, flags=re.IGNORECASE)
     def is_matched(self, w):
-        if self.key == 'id':
-            return w.id == self.value
-        if self.key == 'author_id':
-            return w.author_id == self.value
-        if self.key == 'name_or_description':
-            return (w.name and self.value in w.name) or (w.description and self.value in w.description)
-        return False
+        try:
+            if self.key == FilterOption.ID:
+                return w.id == self.value
+            elif self.key == FilterOption.AUTHOR:
+                return w.author_id == self.value
+            elif self.key == FilterOption.TEXT:
+                return (w.name and self.value in w.name) or (w.description and self.value in w.description)
+            elif self.key == FilterOption.RE_TEXT:
+                return (w.name and self.pattern.search(w.name)) or (w.description and self.pattern.search(w.description))
+            return False
+        except Exception as ex:
+            print("ERROR=", ex, "WORLD=", w)
+            return True
 
 class Filter:
     def __init__(self):

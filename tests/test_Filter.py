@@ -1,7 +1,8 @@
 import unittest
 from unittest import TestCase
-from src.Filter import Filter
+from src.Filter import Filter, FilterOption
 from src.VRC import VrcWorld
+
 
 class TestConfig(unittest.TestCase):
     def setUp(self):
@@ -9,32 +10,34 @@ class TestConfig(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def make_world(self, id, name, author_id, description):
+        w = VrcWorld()
+        w.id = id
+        w.name = name
+        w.author_id = author_id
+        w.description = description
+        return w
+
     def test_filter(self):
-        w1 = VrcWorld()
-        w1.id = 'black'
-        w1.name = 'black1'
-        w1.author_id = 'black2'
-        w2 = VrcWorld()
-        w2.id = 'white'
-        w2.name = 'white1'
-        w2.author_id = 'white2'
-        w3 = VrcWorld()
-        w3.id = 'a'
-        w3.name = 'This is fuck'
-        w3.author_id = 'ok'
-        w4 = VrcWorld()
-        w4.id = 'b'
-        w4.name = 'That is fuck'
-        w4.author_id = 'fail'
+        w1 = self.make_world('black', 'black1', 'black2', 'black3')
+        w2 = self.make_world('white', 'white1', 'white2', 'white3')
+        w3 = self.make_world('a', 'This is fuck', 'ok', None)
+        w4 = self.make_world('b', 'This is fuck', 'fail', None)
+        w5 = self.make_world('c', 'Hoge', 'c', 'This is chill Kons avatars world')
+        w6 = self.make_world('d', 'Hoge', 'Chill avatars world', None)
 
         instance = Filter()
-        instance.add_black('id', 'black')
-        instance.add_white('id', 'white')
-        instance.add_black('name_or_description', 'fuck')
-        instance.add_white('author_id', 'ok')
+        instance.add_black(FilterOption.ID, 'black')
+        instance.add_white(FilterOption.ID, 'white')
+        instance.add_black(FilterOption.TEXT, 'fuck')
+        instance.add_white(FilterOption.AUTHOR, 'ok')
+        instance.add_black(FilterOption.RE_TEXT, 'kon.+avatar')
 
         self.assertEqual(False, instance.is_passed(w1))
         self.assertEqual(True, instance.is_passed(w2))
         self.assertEqual(True, instance.is_passed(w3))
         self.assertEqual(False, instance.is_passed(w4))
+        self.assertEqual(False, instance.is_passed(w5))
+        self.assertEqual(True, instance.is_passed(w6))
+
 

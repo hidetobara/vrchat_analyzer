@@ -1,7 +1,7 @@
 import sys,os,json,datetime
 
 from google.cloud import bigquery
-from src.Config import Config, dt2str, d2str, str2ts
+from src.Config import Config, dt2str, d2str, str2dt
 
 class BqClient:
     def __init__(self):
@@ -25,7 +25,8 @@ class BqClient:
 SELECT
     id, name, author_id, author_name, created_at, updated_at, release_status,
     ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at DESC) as _rank,
-    (SQRT(visits) + SQRT(favorites)) / (DATE_DIFF(CURRENT_DATE(), DATE(created_at), DAY) + DATE_DIFF(CURRENT_DATE(), DATE(updated_at), DAY) +1) as _value FROM `{}`
+    (SQRT(visits) + SQRT(favorites)) / (DATE_DIFF(CURRENT_DATE(), DATE(created_at), DAY) + DATE_DIFF(CURRENT_DATE(), DATE(updated_at), DAY) +1) as _value
+    FROM `{}`
 )
 SELECT id,name,author_id,author_name,created_at,updated_at,_value FROM temp1 WHERE _rank = 1 AND (release_status IS NULL OR release_status != 'hidden')
 ORDER BY _value DESC LIMIT {}""".format(self.table_path, limit)
@@ -43,6 +44,21 @@ SELECT
     WHERE created_at >= '{}'
 )
 SELECT id,name,author_id,author_name,created_at,updated_at,visits,favorites FROM temp1 WHERE _rank = 1 AND (release_status IS NULL OR release_status != 'hidden')""".format(self.table_path, d2str(day_from))
+        print("sql=", sql)
+        for row in self.bq_client.query(sql).result():
+            yield row
+
+    def selecting_between(self, d_from, d_to, limit=60):
+        sql = """with temp1 as (
+SELECT
+    id, name, created_at, updated_at, release_status,
+    ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at DESC) as _rank,
+    SQRT(visits) + favorites as _value
+    FROM `{}`
+    WHERE created_at >= '{}' and created_at < '{}'
+)
+SELECT id,name,created_at,updated_at,_value FROM temp1 WHERE _rank = 1 AND (release_status IS NULL OR release_status != 'hidden')
+ORDER BY _value DESC LIMIT {}""".format(self.table_path, d2str(d_from), d2str(d_to), limit)
         print("sql=", sql)
         for row in self.bq_client.query(sql).result():
             yield row

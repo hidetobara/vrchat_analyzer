@@ -15,7 +15,7 @@ if __name__ == "__main__":
     parser.add_argument("--update_index", help="update frontend-index", action="store_true")
     parser.add_argument("--update_new_coming", help="update new coming", action="store_true")
     parser.add_argument("--insert_world", default=None, help="insert the world")
-    parser.add_argument("--filter", help="import filter", action="store_true")
+    parser.add_argument("--update_month", default=None, help="update one month")
     args = parser.parse_args()
 
     if args.crawl_worlds:
@@ -26,6 +26,8 @@ if __name__ == "__main__":
         manager.update_new_coming()
     if args.insert_world is not None:
         manager.insert_world(args.insert_world, args.force)
-    if args.filter:
-        manager.import_filter()
+    if args.update_month is not None:
+        manager.update_month_index(None if args.update_month.lower() == 'today' else args.update_month)
+
+
 

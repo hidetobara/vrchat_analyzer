@@ -1,6 +1,6 @@
 import json,datetime,requests,json,math
 from requests.auth import HTTPBasicAuth
-from src.Config import Config, dt2str, str2ts
+from src.Config import Config, dt2str, str2dt
 
 API_BASE = "https://api.vrchat.cloud/api/1"
 USER_AGENT = "search-bot"
@@ -78,8 +78,8 @@ class VrcWorld:
             i.id = m['id']
             i.author_name = m['authorName']
             i.author_id = m['authorId']
-            i.created_at = m['created_at'] if type(m['created_at']) is datetime.datetime else str2ts(m['created_at'][:-5])
-            i.updated_at = m['updated_at'] if type(m['updated_at']) is datetime.datetime else str2ts(m['updated_at'][:-5])
+            i.created_at = m['created_at'] if type(m['created_at']) is datetime.datetime else str2dt(m['created_at'][:-5])
+            i.updated_at = m['updated_at'] if type(m['updated_at']) is datetime.datetime else str2dt(m['updated_at'][:-5])
             i.tags = m['tags']
             i.release_status = m['releaseStatus']
             i.visits = m['visits']

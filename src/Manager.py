@@ -1,7 +1,7 @@
-import sys,os,json,re,html,urllib,time,math,datetime
+import sys,os,json,re,html,urllib,time,math,datetime,copy
 
 from google.cloud import storage
-from src.Config import Config, dt2str, d2str, str2ts
+from src.Config import Config, dt2str, d2str, str2dt
 from src.VRC import VrcApi, VrcWorld
 from src.BQ import BqClient
 from src.Filter import Filter
@@ -31,7 +31,7 @@ class Manager:
         if os.path.exists(Config.CRAWLED_PATH):
             with open(Config.CRAWLED_PATH, 'r') as f:
                 crawled = json.load(f)
-                last_updated = str2ts(crawled['last_updated'])
+                last_updated = str2dt(crawled['last_updated'])
         worlds = []
         rows = self.api.get_updated_worlds(last_updated)
         if len(rows) > 0:
@@ -117,3 +117,33 @@ class Manager:
         if len(deletes) > 0:
             print("deltes[-1]=", deletes[-1])
             self.bq_client.insert_rows(list(map(lambda x: x.to_bq(), deletes)))
+
+    def update_month_index(self, today=None):
+        if today is None:
+            today = datetime.date.today()
+        elif type(today) is str:
+            today = str2dt(today)
+        d_to = datetime.date(today.year, today.month, 1)
+        d_tmp = d_to - datetime.timedelta(7) # last week
+        d_from = datetime.date(d_tmp.year, d_tmp.month, 1)
+
+        rows = []
+        for w in self.bq_client.selecting_between(d_from, d_to):
+            detail = self.api.get_world_detail(w['id'])
+            if detail is None:
+                continue
+            if not self.filter.is_passed(detail):
+                print("BAN=", detail)
+                continue
+            rows.append(detail)
+            time.sleep(0.1)
+
+        if len(rows) > 0:
+            month_path = Config.make_month_path(d_from)
+            with open(month_path, "w", encoding='utf-8') as f:
+                for row in rows:
+                    f.write("\t".join(row.to_tsv()) + "\n")
+            print("news[-1]=", row, "favorites=", row.favorites)
+            self.upload_bucket(month_path)
+
+

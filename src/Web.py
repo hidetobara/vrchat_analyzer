@@ -57,7 +57,7 @@ class Web:
     def get_index(self):
         self.prepare()
         worlds, offset_last = self.select_index(Config.NEW_COMING_PATH, 0, 12)
-        context = { 'title':"Search VRC worlds", 'all_is_active':'active', 'worlds':worlds }
+        context = { 'title':"Search VRC worlds", 'coming_is_active':'active', 'worlds':worlds }
         return render_template('top.html', **context)
 
     def get_search(self):

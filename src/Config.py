@@ -4,7 +4,7 @@ def dt2str(dt):
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 def d2str(dt):
     return dt.strftime("%Y-%m-%d")
-def str2ts(s):
+def str2dt(s):
     return datetime.datetime.fromisoformat(s) # %Y-%m-%d %H:%M:%S
 
 def epoch_to_datetime(epoch):
@@ -40,3 +40,7 @@ class Config:
         if key not in self.table:
             return default
         return self.table[key]
+
+    @staticmethod
+    def make_month_path(dt):
+        return dt.strftime('tmp/month%y%m.tsv')

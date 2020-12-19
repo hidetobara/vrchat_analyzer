@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="m-auto container">
+
+    <div class="card bg-light">
+        <div class="card-body">
+            <form id="all" action="/search" method="GET">
+                <div class="input-group mb-3">
+                    <input type="text" name="query" class="form-control" placeholder="keywords" aria-label="..." aria-describedby="button-addon1">
+                    <div class="input-group-append">
+                        <input type="submit" id="button-addon1" class="btn btn-dark" value="{{ _('search.search') }}" />
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <br/>
+    
+    <div class="card">
+        <div class="card-body">
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link" id="coming-tab" data-toggle="tab" href="#coming" role="tab" aria-controls="coming" aria-selected="true">最近</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="last1-tab" data-toggle="tab" href="#last1" role="tab" aria-controls="last1" aria-selected="false">先月</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="old-tab" data-toggle="tab" href="#old" role="tab" aria-controls="old" aria-selected="false">もっと過去</a>
+                </li>
+            </ul>
+            <br />
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane show active" id="coming" role="tabpanel" aria-labelledby="coming-tab">
+                    {% with worlds = worlds_coming %}
+                    {% include "_searched_worlds.html" %}
+                    {% endwith %}
+                </div>
+                <div class="tab-pane" id="last1" role="tabpanel" aria-labelledby="last1-tab">
+                    {% with worlds = worlds_last1 %}
+                    {% include "_searched_worlds.html" %}
+                    {% endwith %}
+                </div>
+                <div class="tab-pane" id="old" role="tabpanel" aria-labelledby="old-tab">
+                    <ul>
+                        {% for m in olds %}
+                        <li><a href='search?mode={{ m[0] }}'>{{ m[1] }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>        
+        </div>
+    </div>
+
+</div>
+{% endblock %}

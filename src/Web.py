@@ -10,18 +10,22 @@ class Web:
     def __init__(self, config):
         self.config = config
 
-    def extend_cache_date(self):
-        today = datetime.date.today() - datetime.timedelta(hours=6)
-        return "." + today.strftime("%y%m%d")
-    def exist_cache(self, path):
-        return os.path.exists(path + self.extend_cache_date())
-    def download_cache(self, path):
+    def exist_origin(self, path):
+        return os.path.exists(path)
+    def download_origin(self, path):
         filename = os.path.basename(path)
         client = storage.Client()
         bucket = storage.Bucket(client)
         bucket.name = Config.BUCKET_NAME
         blob = bucket.blob(filename)
         blob.download_to_filename(path)
+    def extend_cache_date(self):
+        today = datetime.date.today() - datetime.timedelta(hours=6)
+        return "." + today.strftime("%y%m%d")
+    def exist_cache(self, path):
+        return os.path.exists(path + self.extend_cache_date())
+    def download_cache(self, path):
+        self.download_origin(path)
         shutil.copy(path, path + self.extend_cache_date())
 
     def get_locale(self):
@@ -48,17 +52,33 @@ class Web:
             pass
         return text
 
+    def mode_to_str(mode):
+        if 'new_coming':
+            return self.get_text('search.recent')
+        m = re.match(r'monath(\d+)')
+        if m and len(m.group(1)) == 4:
+            year_month = m.group(1)
+            return '20' + year_month[0:2] + '/' + year_month[2:] + '/01 ~'
+        return 'Unknown'
+
     def prepare(self):
-        if not self.exist_cache(Config.INDEX_PATH):
-            self.download_cache(Config.INDEX_PATH)
-        if not self.exist_cache(Config.NEW_COMING_PATH):
-            self.download_cache(Config.NEW_COMING_PATH)
+        for p in [Config.INDEX_PATH, Config.NEW_COMING_PATH]:
+            if not self.exist_cache(p):
+                self.download_cache(p)
+        for m in Config.enable_months():
+            p = Config.mode_to_path(m)
+            if not self.exist_cache(p):
+                self.download_cache(p)
 
     def get_index(self):
         self.prepare()
-        worlds, offset_last = self.select_index(Config.NEW_COMING_PATH, 0, 12)
-        context = { 'title':"Search VRC worlds", 'coming_is_active':'active', 'worlds':worlds }
-        return render_template('top.html', **context)
+        worlds_coming, _ = self.select_index(Config.NEW_COMING_PATH, 0, 12)
+        worlds_last1, _ = self.select_index(Config.make_last1_path(), 0, 12)
+        olds = []
+        for m in Config.enable_months():
+            olds.append([m, self.mode_to_str(m)])
+        context = { 'title':"Search VRC worlds", 'coming_is_active':'active', 'worlds_coming':worlds_coming, 'worlds_last1':worlds_last1, 'olds': olds }
+        return render_template('top1.html', **context)
 
     def get_search(self):
         self.prepare()
@@ -73,14 +93,10 @@ class Web:
             offset = 0
             limit = 12
         
-        if mode == "new_coming":
-            worlds, offset_last = self.select_index(Config.NEW_COMING_PATH, offset, limit, q)
-            context = { 'title':"Search VRC worlds", 'worlds':worlds, 'query':q, 'next':offset_last, 'coming_is_active':'active', 'mode':'new_coming' }
-            return render_template('search.html', **context)
-        else:
-            worlds, offset_last = self.select_index(Config.INDEX_PATH, offset, limit, q)
-            context = { 'title':"Search VRC worlds", 'worlds':worlds, 'query':q, 'next':offset_last, 'all_is_active':'active' }
-            return render_template('search.html', **context)
+        mode_path = Config.mode_to_path(mode)
+        worlds, offset_last = self.select_index(mode_path, offset, limit, q)
+        context = { 'title':"Search VRC worlds", 'worlds':worlds, 'query':q, 'next':offset_last, 'mode':mode }
+        return render_template('search.html', **context)
 
     def select_index(self, path, offset=0, limit=10, query=None):
         query = "" if query is None else query.lower()

@@ -15,7 +15,7 @@ if __name__ == "__main__":
     parser.add_argument("--update_index", help="update frontend-index", action="store_true")
     parser.add_argument("--update_new_coming", help="update new coming", action="store_true")
     parser.add_argument("--insert_world", default=None, help="insert the world")
-    parser.add_argument("--update_month", default=None, help="update one month")
+    parser.add_argument("--update_month", default=None, help="update one month, like 2020-10-01")
     args = parser.parse_args()
 
     if args.crawl_worlds:

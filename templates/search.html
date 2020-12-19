@@ -2,7 +2,12 @@
 {% block content %}
 <div class="mx-auto container">
 
-    {% include "_search_core.html" %}
+    <div class="card bg-light">
+        <div class="card-body mx-auto">
+            <a href="./">{{ _('search.title') }}</a>
+        </div>
+    </div>
+    <br/>
 
     {% if error %}
     <big>{{ error }}</big>

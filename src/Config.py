@@ -1,4 +1,4 @@
-import os,json,datetime,time
+import os,json,datetime,time,re
 
 def dt2str(dt):
     return dt.strftime("%Y-%m-%d %H:%M:%S")
@@ -44,3 +44,29 @@ class Config:
     @staticmethod
     def make_month_path(dt):
         return dt.strftime('tmp/month%y%m.tsv')
+
+    @staticmethod
+    def make_last1_path():
+        today = datetime.date.today()
+        first = datetime.date(today.year, today.month, 1)
+        last_month = first - datetime.timedelta(1)
+        return Config.make_month_path(last_month)
+
+    @staticmethod
+    def mode_to_path(mode):
+        if mode == 'new_coming' or re.match(r'month\d+$', mode):
+            return 'tmp/' + mode + ".tsv"
+        if mode == 'last1':
+            return Config.make_month_path()
+        return 'tmp/index.tsv'
+
+    @staticmethod
+    def enable_months(loop=4):
+        months = []
+        midmonth = datetime.date.today()
+        for _ in range(loop+1):
+            first = datetime.date(midmonth.year, midmonth.month, 1)
+            months.append(first.strftime('month%y%m'))
+            midmonth = first - datetime.timedelta(3)
+        return months[1:]
+    

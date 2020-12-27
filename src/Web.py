@@ -52,20 +52,20 @@ class Web:
             pass
         return text
 
-    def mode_to_str(mode):
-        if 'new_coming':
+    def mode_to_str(self, mode):
+        if 'new_coming' == mode:
             return self.get_text('search.recent')
-        m = re.match(r'monath(\d+)')
+        m = re.match(r'month(\d+)', mode)
         if m and len(m.group(1)) == 4:
             year_month = m.group(1)
-            return '20' + year_month[0:2] + '/' + year_month[2:] + '/01 ~'
+            return '20' + year_month[0:2] + '/' + year_month[2:]
         return 'Unknown'
 
     def prepare(self):
         for p in [Config.INDEX_PATH, Config.NEW_COMING_PATH]:
             if not self.exist_cache(p):
                 self.download_cache(p)
-        for m in Config.enable_months():
+        for m in Config.get_old_months():
             p = Config.mode_to_path(m)
             if not self.exist_cache(p):
                 self.download_cache(p)
@@ -75,9 +75,10 @@ class Web:
         worlds_coming, _ = self.select_index(Config.NEW_COMING_PATH, 0, 12)
         worlds_last1, _ = self.select_index(Config.make_last1_path(), 0, 12)
         olds = []
-        for m in Config.enable_months():
-            olds.append([m, self.mode_to_str(m)])
-        context = { 'title':"Search VRC worlds", 'coming_is_active':'active', 'worlds_coming':worlds_coming, 'worlds_last1':worlds_last1, 'olds': olds }
+        for m in Config.get_old_months():
+            worlds, _ = self.select_index(Config.mode_to_path(m), 0, 3)
+            olds.append({'mode':m, 'title':self.mode_to_str(m), 'worlds':worlds})
+        context = { 'title':"Search VRC worlds", 'coming_is_active':'active', 'worlds_coming':worlds_coming, 'worlds_last1':worlds_last1, 'olds':olds }
         return render_template('top1.html', **context)
 
     def get_search(self):
@@ -95,7 +96,7 @@ class Web:
         
         mode_path = Config.mode_to_path(mode)
         worlds, offset_last = self.select_index(mode_path, offset, limit, q)
-        context = { 'title':"Search VRC worlds", 'worlds':worlds, 'query':q, 'next':offset_last, 'mode':mode }
+        context = { 'title':"Search VRC worlds", 'worlds':worlds, 'query':q, 'next':q and offset_last, 'mode':mode, 'mode_name':self.mode_to_str(mode) }
         return render_template('search.html', **context)
 
     def select_index(self, path, offset=0, limit=10, query=None):
@@ -118,7 +119,7 @@ class Web:
                     cells = line.split("\t")
                     ext = json.loads(cells[4])
                     array.append({
-                        'col': len(array) % 3,
+                        'index':index, 'col': len(array) % 3,
                         'id':cells[0], 'name':cells[1], 'author_name':cells[2], 'description':cells[3],
                         'launch_url':"https://www.vrchat.com/home/launch?worldId={}".format(cells[0]),
                         'thumbnail_image_url':ext['thumbnail_image_url'],

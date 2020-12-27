@@ -2,7 +2,9 @@
 {% block content %}
 <div class="m-auto container">
 
-    <div class="card bg-light">
+    {% include "_header.html" %}
+
+    <div class="card">
         <div class="card-body">
             <form id="all" action="/search" method="GET">
                 <div class="input-group mb-3">
@@ -20,13 +22,13 @@
         <div class="card-body">
             <ul class="nav nav-tabs" id="myTab" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link" id="coming-tab" data-toggle="tab" href="#coming" role="tab" aria-controls="coming" aria-selected="true">最近</a>
+                    <a class="nav-link active" id="coming-tab" data-toggle="tab" href="#coming" role="tab" aria-controls="coming" aria-selected="true">{{ _('search.recent') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="last1-tab" data-toggle="tab" href="#last1" role="tab" aria-controls="last1" aria-selected="false">先月</a>
+                    <a class="nav-link" id="last1-tab" data-toggle="tab" href="#last1" role="tab" aria-controls="last1" aria-selected="false">{{ _('search.last1') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="old-tab" data-toggle="tab" href="#old" role="tab" aria-controls="old" aria-selected="false">もっと過去</a>
+                    <a class="nav-link" id="old-tab" data-toggle="tab" href="#old" role="tab" aria-controls="old" aria-selected="false">{{ _('search.passed') }}</a>
                 </li>
             </ul>
             <br />
@@ -35,18 +37,40 @@
                     {% with worlds = worlds_coming %}
                     {% include "_searched_worlds.html" %}
                     {% endwith %}
+                    <div class="card" style="border: none">
+                        <div class="card-body">                
+                            <div class="row">
+                                <a class="btn bnt-lg btn-dark" href="/search?query=&offset=12&mode=new_coming"> {{ _('search.next') }} </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="tab-pane" id="last1" role="tabpanel" aria-labelledby="last1-tab">
                     {% with worlds = worlds_last1 %}
                     {% include "_searched_worlds.html" %}
                     {% endwith %}
+                    <div class="card" style="border: none">
+                        <div class="card-body">
+                            <div class="row">
+                                <a class="btn bnt-lg btn-dark" href="/search?query=&offset=12&mode=last1"> {{ _('search.next') }} </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="tab-pane" id="old" role="tabpanel" aria-labelledby="old-tab">
-                    <ul>
-                        {% for m in olds %}
-                        <li><a href='search?mode={{ m[0] }}'>{{ m[1] }}</a></li>
-                        {% endfor %}
-                    </ul>
+                    {% for m in olds %}
+                    <div class="card bg-light">
+                        <div class="card-body mx-auto">
+                            <a href='search?mode={{ m["mode"] }}'>{{ m["title"] }} {{ _('search.more') }}</a>
+                        </div>
+                    </div>
+                    <br/>
+
+                    {% with worlds = m["worlds"] %}
+                    {% include "_searched_worlds.html" %}
+                    {% endwith %}
+
+                    {% endfor %}
                 </div>
             </div>        
         </div>

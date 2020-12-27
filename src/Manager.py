@@ -118,7 +118,7 @@ class Manager:
             print("deltes[-1]=", deletes[-1])
             self.bq_client.insert_rows(list(map(lambda x: x.to_bq(), deletes)))
 
-    def update_month_index(self, today=None):
+    def update_last_month_index(self, today=None):
         if today is None:
             today = datetime.date.today()
         elif type(today) is str:

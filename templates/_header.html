@@ -1,0 +1,12 @@
+<div class="card bg-light">
+    <div class="card-body mx-auto">
+        <a href="./">
+        {% if mode_name %}
+            {{ mode_name }}
+        {% else %}
+            {{ _('search.title') }}
+        {% endif %}
+        </a>
+    </div>
+</div>
+<br/>

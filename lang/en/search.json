@@ -5,5 +5,8 @@
     "recent_search": "Search recently (last one month)",
     "all": "All",
     "recent": "Recent",
-    "more": "I want to see more"
+    "last1": "Last month",
+    "passed": "Passed",
+    "more": "See more",
+    "next": "See next"
 }

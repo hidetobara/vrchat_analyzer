@@ -5,5 +5,8 @@
     "recent_search": "最近を検索(1ヶ月)",
     "all": "すべて",
     "recent": "最近",
-    "more": "続けて検索"
+    "last1": "先月",
+    "passed": "過去",
+    "more": "もっと表示",
+    "next": "次を表示"
 }

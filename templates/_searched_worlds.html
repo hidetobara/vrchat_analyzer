@@ -6,7 +6,15 @@
         <div class="card">
             <a target="_blank" href="{{ w['launch_url'] }}"><img class="card-img-top" src="{{ w['thumbnail_image_url'] }}"></a>
             <div class="card-body">
-                <h5 class="card-title"><a target="_blank" href="{{ w['launch_url'] }}">{{ w['name'] }}</a></h5>
+                <h5 class="card-title">
+                    <a target="_blank" href="{{ w['launch_url'] }}">
+                    {% if w['name']|length > 32 %}
+                        {{ w['name'][:32] }}...
+                    {% else %}
+                        {{ w['name'] }}
+                    {% endif %}
+                    </a>
+                </h5>
                 <h6 class="card-subtitle">{{ w['author_name'] }}</h6>
                 <hr/>
                 <p class="card-text">

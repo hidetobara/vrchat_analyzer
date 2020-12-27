@@ -2,12 +2,7 @@
 {% block content %}
 <div class="mx-auto container">
 
-    <div class="card bg-light">
-        <div class="card-body mx-auto">
-            <a href="./">{{ _('search.title') }}</a>
-        </div>
-    </div>
-    <br/>
+    {% include "_header.html" %}
 
     {% if error %}
     <big>{{ error }}</big>
@@ -16,14 +11,15 @@
     <br/>
     {% include "_searched_worlds.html" %}
 
-    {% if next %}
     <br/>
     <div class="card">
         <div class="card-body">
+            {% if next %}
             <a class="btn bnt-lg btn-dark" href="/search?query={{ query }}&offset={{ next }}&mode={{ mode }}"> {{ _('search.more') }} </a>
+            {% endif %}
+            <a class="btn bnt-lg btn-dark float-right" href="/"> {{ _('search.title') }} </a>            
         </div>
     </div>
-    {% endif %}
 
 </div>
 {% endblock %}

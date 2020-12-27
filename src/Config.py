@@ -57,11 +57,11 @@ class Config:
         if mode == 'new_coming' or re.match(r'month\d+$', mode):
             return 'tmp/' + mode + ".tsv"
         if mode == 'last1':
-            return Config.make_month_path()
+            return Config.make_last1_path()
         return 'tmp/index.tsv'
 
     @staticmethod
-    def enable_months(loop=4):
+    def get_old_months(loop=4):
         months = []
         midmonth = datetime.date.today()
         for _ in range(loop+1):

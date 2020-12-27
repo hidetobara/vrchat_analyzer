@@ -27,7 +27,7 @@ if __name__ == "__main__":
     if args.insert_world is not None:
         manager.insert_world(args.insert_world, args.force)
     if args.update_month is not None:
-        manager.update_month_index(None if args.update_month.lower() == 'today' else args.update_month)
+        manager.update_last_month_index(None if args.update_month.lower() == 'today' else args.update_month)
 
 
 

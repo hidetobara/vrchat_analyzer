@@ -96,7 +96,7 @@ class Web:
         
         mode_path = Config.mode_to_path(mode)
         worlds, offset_last = self.select_index(mode_path, offset, limit, q)
-        context = { 'title':"Search VRC worlds", 'worlds':worlds, 'query':q, 'next':q and offset_last, 'mode':mode, 'mode_name':self.mode_to_str(mode) }
+        context = {'title':"Search VRC worlds", 'worlds':worlds, 'query':q, 'next':offset_last, 'mode':mode, 'mode_name':self.mode_to_str(mode) }
         return render_template('search.html', **context)
 
     def select_index(self, path, offset=0, limit=10, query=None):

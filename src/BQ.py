@@ -48,7 +48,7 @@ SELECT id,name,author_id,author_name,created_at,updated_at,visits,favorites FROM
         for row in self.bq_client.query(sql).result():
             yield row
 
-    def selecting_between(self, d_from, d_to, limit=60):
+    def selecting_between(self, d_from, d_to, limit=96):
         sql = """with temp1 as (
 SELECT
     id, name, created_at, updated_at, release_status,

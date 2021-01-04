@@ -54,6 +54,8 @@ class Config:
 
     @staticmethod
     def mode_to_path(mode):
+        if mode is None:
+            return 'tmp/index.tsv'
         if mode == 'new_coming' or re.match(r'month\d+$', mode):
             return 'tmp/' + mode + ".tsv"
         if mode == 'last1':

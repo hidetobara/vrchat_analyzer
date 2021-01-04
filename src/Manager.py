@@ -8,7 +8,7 @@ from src.Filter import Filter
 
 class Manager:
     INDEX_LIMIT = 5000
-    NEW_COMING_DAY = 28
+    NEW_COMING_DAY = 21
 
     def __init__(self, config):
         self.config = config

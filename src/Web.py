@@ -53,13 +53,17 @@ class Web:
         return text
 
     def mode_to_str(self, mode):
+        if mode is None:
+            return None
         if 'new_coming' == mode:
             return self.get_text('search.recent')
+        if 'last1' == mode:
+            return self.get_text('search.last1')
         m = re.match(r'month(\d+)', mode)
         if m and len(m.group(1)) == 4:
             year_month = m.group(1)
             return '20' + year_month[0:2] + '/' + year_month[2:]
-        return 'Unknown'
+        return None
 
     def prepare(self):
         for p in [Config.INDEX_PATH, Config.NEW_COMING_PATH]:

@@ -28,7 +28,7 @@
                     <a class="nav-link" id="last1-tab" data-toggle="tab" href="#last1" role="tab" aria-controls="last1" aria-selected="false">{{ _('search.last1') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="old-tab" data-toggle="tab" href="#old" role="tab" aria-controls="old" aria-selected="false">{{ _('search.passed') }}</a>
+                    <a class="nav-link" id="old-tab" data-toggle="tab" href="#old" role="tab" aria-controls="old" aria-selected="false">{{ _('search.history') }}</a>
                 </li>
             </ul>
             <br />
@@ -61,7 +61,7 @@
                     {% for m in olds %}
                     <div class="card bg-light">
                         <div class="card-body mx-auto">
-                            <a href='search?mode={{ m["mode"] }}'>{{ m["title"] }} {{ _('search.more') }}</a>
+                            <a href='search?mode={{ m["mode"] }}'>↓【{{ m["title"] }}】 {{ _('search.more') }} ↓</a>
                         </div>
                     </div>
                     <br/>

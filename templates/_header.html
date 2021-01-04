@@ -2,7 +2,7 @@
     <div class="card-body mx-auto">
         <a href="./">
         {% if mode_name %}
-            {{ mode_name }}
+        {{ _('search.trend_head') }}【 {{ mode_name }}】{{ _('search.trend_foot') }}
         {% else %}
             {{ _('search.title') }}
         {% endif %}

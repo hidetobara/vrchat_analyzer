@@ -4,9 +4,11 @@
     "search": "Search",
     "recent_search": "Search recently (last one month)",
     "all": "All",
-    "recent": "Recent",
+    "recent": "Last 3 weeks",
     "last1": "Last month",
-    "passed": "Passed",
+    "history": "history",
     "more": "See more",
+    "trend_head": "The trend of ",
+    "trend_foot": "",
     "next": "See next"
 }

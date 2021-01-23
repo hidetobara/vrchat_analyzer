@@ -7,7 +7,7 @@ from src.BQ import BqClient
 from src.Filter import Filter
 
 class Manager:
-    INDEX_LIMIT = 5000
+    INDEX_LIMIT = 7500
     NEW_COMING_DAY = 21
 
     def __init__(self, config):
@@ -77,7 +77,7 @@ class Manager:
             rows.append(detail)
             if len(rows) % 50 == 0:
                 print("update=", len(rows), "value=", w['_value'])
-            time.sleep(0.5)
+            time.sleep(0.25)
 
         with open(Config.INDEX_PATH, "w", encoding='utf-8') as f:
             for row in rows:

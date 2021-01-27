@@ -9,7 +9,7 @@
         <div class="card-body">
             <form id="all" action="/search" method="GET">
                 <div class="input-group mb-3">
-                    <input type="text" name="query" value="{{ query }}" class="form-control" placeholder="keywords" aria-label="..." aria-describedby="button-addon1">
+                    <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="keywords" aria-label="..." aria-describedby="button-addon1">
                     <div class="input-group-append">
                         <input type="submit" id="button-addon1" class="btn btn-dark" value="{{ _('search.search') }}" />
                     </div>
@@ -26,10 +26,21 @@
     <br/>
     <div class="card">
         <div class="card-body">
-            {% if next %}
-            <a class="btn bnt-lg btn-dark" href="/search?query={{ query }}&offset={{ next }}{% if mode %}&mode={{ mode }}{% endif %}"> {{ _('search.more') }} </a>
-            {% endif %}
-            <a class="btn bnt-lg btn-dark float-right" href="/"> {{ _('search.title') }} </a>            
+            <div class="row">
+                <div class="col-sm-4">
+                    {% if p > 0 %}
+                    <a class="btn bnt-lg btn-dark float-left" href="/search?q={{ q }}&p={{ p -1 }}{% if mode %}&mode={{ mode }}{% endif %}"> {{ _('search.previous') }} </a>
+                    {% endif %}        
+                </div>
+                <div class="col-sm-4 text-center">
+                    <a class="btn bnt-lg btn-dark" href="/"> Top </a>
+                </div>
+                <div class="col-sm-4">
+                    {% if next %}
+                    <a class="btn bnt-lg btn-dark float-right" href="/search?q={{ q }}&p={{ next }}{% if mode %}&mode={{ mode }}{% endif %}"> {{ _('search.next') }} </a>
+                    {% endif %}                            
+                </div>
+            </div>
         </div>
     </div>
 

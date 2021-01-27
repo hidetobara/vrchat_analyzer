@@ -12,6 +12,6 @@ class TestConfig(unittest.TestCase):
     def test_select(self):
         web = Web(Config("private/my_account.json"))
         rows, _index = web.select_index("tests/new_coming.tsv", 3, 100, "quest")
-        self.assertEqual(26, len(rows))
+        self.assertEqual(23, len(rows))
         self.assertEqual(None, _index)
         self.assertTrue("quest" in rows[0]['description'].lower())

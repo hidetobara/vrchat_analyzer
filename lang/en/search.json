@@ -1,5 +1,5 @@
 {
-    "title": "Search in VRChat",
+    "title": "VRC World Trend",
     "trends": "Recent trends",
     "search": "Search",
     "recent_search": "Search recently (last one month)",
@@ -10,5 +10,6 @@
     "more": "See more",
     "trend_head": "The trend of ",
     "trend_foot": "",
-    "next": "See next"
+    "previous": "Previous",
+    "next": "Next"
 }

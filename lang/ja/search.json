@@ -1,5 +1,5 @@
 {
-    "title": "VRChat 内を検索",
+    "title": "VRC World Trend",
     "trends": "最近の流行",
     "search": "検索",
     "recent_search": "最近を検索(1ヶ月)",
@@ -10,5 +10,6 @@
     "more": "もっと表示",
     "trend_head": "",
     "trend_foot": "のトレンド",
-    "next": "次を表示"
+    "previous": "前に",
+    "next": "次へ"
 }

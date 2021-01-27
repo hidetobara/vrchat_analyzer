@@ -8,7 +8,7 @@
         <div class="card-body">
             <form id="all" action="/search" method="GET">
                 <div class="input-group mb-3">
-                    <input type="text" name="query" class="form-control" placeholder="keywords" aria-label="..." aria-describedby="button-addon1">
+                    <input type="text" name="q" class="form-control" placeholder="keywords" aria-label="..." aria-describedby="button-addon1">
                     <div class="input-group-append">
                         <input type="submit" id="button-addon1" class="btn btn-dark" value="{{ _('search.search') }}" />
                     </div>
@@ -39,9 +39,7 @@
                     {% endwith %}
                     <div class="card" style="border: none">
                         <div class="card-body">                
-                            <div class="row">
-                                <a class="btn bnt-lg btn-dark" href="/search?query=&offset=12&mode=new_coming"> {{ _('search.next') }} </a>
-                            </div>
+                            <a class="btn bnt-lg btn-dark float-right" href="/search?q=&p=1&mode=new_coming"> {{ _('search.next') }} </a>
                         </div>
                     </div>
                 </div>
@@ -51,9 +49,7 @@
                     {% endwith %}
                     <div class="card" style="border: none">
                         <div class="card-body">
-                            <div class="row">
-                                <a class="btn bnt-lg btn-dark" href="/search?query=&offset=12&mode=last1"> {{ _('search.next') }} </a>
-                            </div>
+                            <a class="btn bnt-lg btn-dark float-right" href="/search?q=&p=1&mode=last1"> {{ _('search.next') }} </a>
                         </div>
                     </div>
                 </div>

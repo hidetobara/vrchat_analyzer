@@ -37,7 +37,7 @@ class Manager:
         if len(rows) > 0:
             last_updated = rows[0].updated_at
             worlds.extend(rows)
-        time.sleep(0.3)
+        time.sleep(0.1)
         worlds.extend(self.api.get_familiar_worlds())
         self.bq_client.insert_rows(list(map(lambda x: x.to_bq(), worlds)))
 

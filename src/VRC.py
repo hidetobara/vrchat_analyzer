@@ -13,9 +13,10 @@ class VrcWorld:
         self.author_name = None
         self.author_id = None
         self.tags = []
-        self.created_at = None
+        self.created_at = None # hard to use...
         self.updated_at = None
         self.crawled_at = None
+        self.published_at = None # may be published in labs
         self.release_status = None # hidden if the world is deleted
         self.visits = 0
         self.favorites = 0
@@ -36,6 +37,7 @@ class VrcWorld:
         return {'id':self.id, 'name':self.name, 'author_id':self.author_id, 'author_name':self.author_name,
             'description':self.description, 'tags':'|'+'|'.join(self.tags)+'|',
             'created_at':self.created_at.strftime('%Y-%m-%d %H:%M:%S'), 'updated_at':self.updated_at.strftime('%Y-%m-%d %H:%M:%S'), 'crawled_at':self.crawled_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'published_at':None if self.published_at is None else self.published_at.strftime('%Y-%m-%d %H:%M:%S'),
             'visits':self.visits, 'favorites':self.favorites, 'thumbnail_image_url':self.thumbnail_image_url}
     def to_web(self):
         return {'id':self.id, 'name':self.name, 'description':self.description, 'author_name':self.author_name,
@@ -80,6 +82,10 @@ class VrcWorld:
             i.author_id = m['authorId']
             i.created_at = m['created_at'] if type(m['created_at']) is datetime.datetime else str2dt(m['created_at'][:-5])
             i.updated_at = m['updated_at'] if type(m['updated_at']) is datetime.datetime else str2dt(m['updated_at'][:-5])
+            if m['labsPublicationDate'] and m['labsPublicationDate'] != 'none':
+                i.published_at = m['labsPublicationDate'] if type(m['labsPublicationDate']) is datetime.datetime else str2dt(m['labsPublicationDate'][:-5])
+            elif m['publicationDate'] and m['publicationDate'] != 'none':
+                i.published_at = m['publicationDate'] if type(m['publicationDate']) is datetime.datetime else str2dt(m['publicationDate'][:-5])
             i.tags = m['tags']
             i.release_status = m['releaseStatus']
             i.visits = m['visits']

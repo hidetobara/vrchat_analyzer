@@ -18,7 +18,7 @@ if __name__ == "__main__":
     parser.add_argument("--update_month", default=None, help="update one month, like 2020-10-01")
     args = parser.parse_args()
 
-    if args.crawl_worlds:
+    if args.crawl_worlds: # crawl updated worlds and update records.
         manager.crawl_worlds()
     if args.update_index:
         manager.update_index()

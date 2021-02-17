@@ -41,9 +41,9 @@ SELECT
     id, name, author_id, author_name, created_at, updated_at, release_status,
     ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at DESC) as _rank,
     visits, favorites, FROM `{}`
-    WHERE created_at >= '{}'
+    WHERE (published_at IS NULL AND created_at >= '{}') OR (published_at IS NOT NULL AND published_at >= '{}')
 )
-SELECT id,name,author_id,author_name,created_at,updated_at,visits,favorites FROM temp1 WHERE _rank = 1 AND (release_status IS NULL OR release_status != 'hidden')""".format(self.table_path, d2str(day_from))
+SELECT id,name,author_id,author_name,created_at,updated_at,visits,favorites FROM temp1 WHERE _rank = 1 AND (release_status IS NULL OR release_status != 'hidden')""".format(self.table_path, d2str(day_from), d2str(day_from))
         print("sql=", sql)
         for row in self.bq_client.query(sql).result():
             yield row

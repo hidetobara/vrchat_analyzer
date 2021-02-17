@@ -54,12 +54,13 @@ class VrcWorld:
 
     def how_many_days_passed(self):
         now = datetime.datetime.now()
-        return (now - self.created_at).days + (now - self.updated_at).days
+        born_at = self.created_at if self.published_at is None else self.published_at
+        return math.sqrt((now - born_at).days ** 2 + (now - self.updated_at).days ** 2 + 1)
 
     def fresh_value(self):
-        return (math.sqrt(self.visits) + self.favorites) / math.sqrt(self.how_many_days_passed() + 1)
+        return (math.sqrt(self.visits) + self.favorites) / self.how_many_days_passed()
     def worth_value(self):
-        return (math.sqrt(self.visits) + math.sqrt(self.favorites)) / (self.how_many_days_passed() + 1)
+        return (math.sqrt(self.visits) + math.sqrt(self.favorites)) / self.how_many_days_passed()
 
     @staticmethod
     def bq_parse(m):

@@ -38,6 +38,7 @@ class VrcWorld:
             'description':self.description, 'tags':'|'+'|'.join(self.tags)+'|',
             'created_at':self.created_at.strftime('%Y-%m-%d %H:%M:%S'), 'updated_at':self.updated_at.strftime('%Y-%m-%d %H:%M:%S'), 'crawled_at':self.crawled_at.strftime('%Y-%m-%d %H:%M:%S'),
             'published_at':None if self.published_at is None else self.published_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'release_status':self.release_status,
             'visits':self.visits, 'favorites':self.favorites, 'thumbnail_image_url':self.thumbnail_image_url}
     def to_web(self):
         return {'id':self.id, 'name':self.name, 'description':self.description, 'author_name':self.author_name,

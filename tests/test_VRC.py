@@ -48,6 +48,7 @@ class TestConfig(unittest.TestCase):
         data = json.loads(text)
         instance = VrcWorld.parse(data)
         self.assertEqual('Tutorial world', instance.name)
+        self.assertEqual('public', instance.release_status)
         self.assertTrue('android' in instance.platforms)
         self.assertTrue('standalonewindows' in instance.platforms)
         self.assertEqual(datetime.datetime(2019, 7, 15, 20, 3, 43), instance.published_at)

@@ -5,7 +5,7 @@ This is VRChat Search Site.
 docker build -t gcr.io/vrchat-analyzer/crawler .
 
 ## Develop
-docker run -it --rm -p 8080:8080 -v C:\obara\VrcSearch:/app gcr.io/vrchat-analyzer/crawler /bin/bash
+docker run -it --rm -p 8080:8080  -p 13306:3306 -v C:\obara\VrcSearch:/app gcr.io/vrchat-analyzer/crawler /bin/bash
 
 ## Test
 python3 -m unittest tests/test_*

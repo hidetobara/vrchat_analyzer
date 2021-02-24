@@ -7,7 +7,7 @@ from src.BQ import BqClient
 from src.Filter import Filter
 
 class Manager:
-    INDEX_LIMIT = 7500
+    INDEX_LIMIT = 10000
     NEW_COMING_DAY = 21
 
     def __init__(self, config):

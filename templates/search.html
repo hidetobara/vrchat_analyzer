@@ -33,7 +33,7 @@
                     {% endif %}        
                 </div>
                 <div class="col-sm-4 text-center">
-                    <a class="btn bnt-lg btn-dark" href="/"> Top </a>
+                    <a class="btn bnt-lg btn-dark" href="/"> {{ _('search.top') }} </a>
                 </div>
                 <div class="col-sm-4">
                     {% if next %}
@@ -43,6 +43,8 @@
             </div>
         </div>
     </div>
+
+    {% include "_footer.html" %}
 
 </div>
 {% endblock %}

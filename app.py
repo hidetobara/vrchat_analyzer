@@ -21,9 +21,17 @@ def get_index():
 def get_search():
     return web.get_search()
 
-@app.route('/tmp_info', methods=['GET'])
+#@app.route('/tmp_info', methods=['GET'])
 def get_tmp_info():
     return web.get_tmp_info()
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'img'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+@app.route('/img/<filename>')
+def name_path(filename):
+    return send_from_directory(os.path.join(app.root_path, 'img'), filename, mimetype='image/vnd.microsoft.icon')
 
 if __name__ == "__main__":
     web.prepare()

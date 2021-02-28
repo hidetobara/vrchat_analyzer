@@ -1,6 +1,7 @@
 import sys,os,json,re,html,urllib,time,math,datetime,copy
-
 from google.cloud import storage
+import numpy
+
 from src.Config import Config, dt2str, d2str, str2dt
 from src.VRC import VrcApi, VrcWorld
 from src.BQ import BqClient
@@ -107,6 +108,7 @@ class Manager:
                 print("update=", len(news))
             time.sleep(0.3)
 
+        self.adjust_statistics(news)
         if len(news) > 0:
             news.sort(key=lambda x: x.fresh_value(), reverse=True)
             with open(Config.NEW_COMING_PATH, "w", encoding='utf-8') as f:
@@ -146,4 +148,11 @@ class Manager:
             print("news[-1]=", row, "favorites=", row.favorites)
             self.upload_bucket(month_path)
 
-
+    def adjust_statistics(self, worlds):
+        fresh_values = list(map(lambda x: x.fresh_value(), worlds))
+        all_ave = numpy.mean(fresh_values)
+        all_std = numpy.std(fresh_values)
+        avatar_values = list(map(lambda x: x.fresh_value(), filter(lambda x: "avatar" in x.description.lower(), worlds)))
+        ava_ave = numpy.mean(avatar_values)
+        ava_std = numpy.std(avatar_values)
+        print("ave,std@all=", all_ave, all_std, "@ava=", ava_ave, ava_std)

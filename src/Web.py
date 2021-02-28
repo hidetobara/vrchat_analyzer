@@ -32,14 +32,17 @@ class Web:
 
     def get_locale(self):
         locale = 'en'
-        languages = request.headers.get('Accept-Language').split(',')
-        for language in languages:
-            locale_long = language.split(';')[0]
-            locale = locale_long.split('-')[0]
-            break
-        if locale not in ['ja', 'en']:
-            locale = 'en'
-        return locale.lower()
+        try:
+            languages = request.headers.get('Accept-Language').split(',')
+            for language in languages:
+                locale_long = language.split(';')[0]
+                locale = locale_long.split('-')[0]
+                break
+            if locale not in ['ja', 'en']:
+                locale = 'en'
+            return locale.lower()
+        except:
+            return 'en'
 
     def get_text(self, key):
         text = ''

@@ -4,8 +4,8 @@ FROM python:3.8
 RUN apt update -y && apt upgrade -y && apt -y install python3-pip vim supervisor less \
 	&& apt clean
 RUN pip3 install flask gunicorn
-RUN pip3 install google-cloud-bigquery google-cloud-storage
-RUN pip3 install gspread oauth2client
+RUN pip3 install google-cloud-bigquery google-cloud-storage gspread oauth2client
+RUN pip3 install numpy
 
 ENV APP_HOME /app
 WORKDIR $APP_HOME

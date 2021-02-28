@@ -53,3 +53,9 @@ class TestConfig(unittest.TestCase):
         self.assertTrue('standalonewindows' in instance.platforms)
         self.assertEqual(datetime.datetime(2019, 7, 15, 20, 3, 43), instance.published_at)
         self.assertTrue(500.0 < instance.how_many_days_passed())
+
+        self.assertTrue(1.0 < instance.adjust_value())
+        instance.adjusted_value = lambda x: 0 if "hoge" in x.description else 1
+        self.assertEqual(0, instance.adjust_value())
+        instance.adjusted_value = lambda x: 0 if "huga" in x.description else 1
+        self.assertEqual(1, instance.adjust_value())

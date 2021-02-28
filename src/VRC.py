@@ -24,6 +24,8 @@ class VrcWorld:
         self.heat = 0
         self.platforms = None
 
+        self.adjusted_value = None
+
     def is_public(self):
         return self.release_status == 'public'
 
@@ -59,9 +61,14 @@ class VrcWorld:
         return math.sqrt((now - born_at).days ** 2 + (now - self.updated_at).days ** 2 + 1)
 
     def fresh_value(self):
-        return (math.sqrt(self.visits) + self.favorites) / self.how_many_days_passed()
+        return (math.sqrt(self.visits) + self.favorites) / (self.how_many_days_passed()**1.5)
     def worth_value(self):
-        return (math.sqrt(self.visits) + math.sqrt(self.favorites)) / self.how_many_days_passed()
+        return (math.sqrt(self.visits) + self.favorites) / self.how_many_days_passed()
+    def adjust_value(self):
+        if self.adjusted_value is None:
+            return self.worth_value()
+        else:
+            return self.adjusted_value(self)
 
     @staticmethod
     def bq_parse(m):
@@ -182,7 +189,7 @@ class VrcApi:
         url = "{}/worlds/{}".format(API_BASE, wrld)
         try:
             response = requests.get(url, params={"apiKey": self.api_key, "authToken": self.auth_token}, headers=self.headers)
-            if response is None or response.text is None:
+            if response is None or len(response.text) == 0:
                 return None
             return VrcWorld.parse(json.loads(response.text), self.now)
         except Exception as ex:

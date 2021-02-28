@@ -1,14 +1,16 @@
 import sys,os,json,re,html,urllib,time,math,datetime,copy
-
 from google.cloud import storage
+import numpy
+
 from src.Config import Config, dt2str, d2str, str2dt
 from src.VRC import VrcApi, VrcWorld
 from src.BQ import BqClient
 from src.Filter import Filter
+from src.DB import DB
 
 class Manager:
-    INDEX_LIMIT = 7500
-    NEW_COMING_DAY = 21
+    INDEX_LIMIT = 10000
+    NEW_COMING_DAY = 5 # 21 is better ?
 
     def __init__(self, config):
         self.config = config
@@ -83,10 +85,14 @@ class Manager:
             for row in rows:
                 f.write("\t".join(row.to_tsv()) + "\n")
         self.upload_bucket(Config.INDEX_PATH)
-
+        
         if len(deletes) > 0:
             print("deltes[-1]=", deletes[-1])
             self.bq_client.insert_rows(list(map(lambda x: x.to_bq(), deletes)))
+
+        db = DB()
+        db.insert_vrc(worlds)
+        self.upload_bucket(DB.VRC_WORLDS_PATH)
 
     def update_new_coming(self):
         news = []
@@ -107,6 +113,7 @@ class Manager:
                 print("update=", len(news))
             time.sleep(0.3)
 
+        self.adjust_statistics(news)
         if len(news) > 0:
             news.sort(key=lambda x: x.fresh_value(), reverse=True)
             with open(Config.NEW_COMING_PATH, "w", encoding='utf-8') as f:
@@ -146,4 +153,11 @@ class Manager:
             print("news[-1]=", row, "favorites=", row.favorites)
             self.upload_bucket(month_path)
 
-
+    def adjust_statistics(self, worlds):
+        fresh_values = list(map(lambda x: x.fresh_value(), worlds))
+        all_ave = numpy.mean(fresh_values)
+        all_std = numpy.std(fresh_values)
+        avatar_values = list(map(lambda x: x.fresh_value(), filter(lambda x: "avatar" in x.description.lower(), worlds)))
+        ava_ave = numpy.mean(avatar_values)
+        ava_std = numpy.std(avatar_values)
+        print("ave,std@all=", all_ave, all_std, "@ava=", ava_ave, ava_std)

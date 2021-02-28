@@ -1,15 +1,14 @@
 ﻿
 FROM python:3.8
 
-RUN apt update -y && apt upgrade -y && apt -y install python3-pip vim supervisor less default-mysql-server default-mysql-client \
+RUN apt update -y && apt upgrade -y && apt -y install python3-pip vim supervisor less \
 	&& apt clean
-RUN pip3 install flask gunicorn mysql-connector-python
-RUN pip3 install google-cloud-bigquery google-cloud-storage
-RUN pip3 install gspread oauth2client
+RUN pip3 install flask gunicorn
+RUN pip3 install google-cloud-bigquery google-cloud-storage gspread oauth2client
+RUN pip3 install numpy
 
 ENV APP_HOME /app 
 WORKDIR $APP_HOME
 COPY . ./
 
-RUN chmod 744 /app/running.sh
-CMD ["/app/running.sh"]
+CMD exec gunicorn --bind :8080 --workers 1 --threads 4 --timeout 0 app:app

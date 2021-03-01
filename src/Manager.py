@@ -91,7 +91,7 @@ class Manager:
             self.bq_client.insert_rows(list(map(lambda x: x.to_bq(), deletes)))
 
         db = DB()
-        db.insert_vrc(worlds)
+        db.insert_vrc(rows)
         self.upload_bucket(DB.VRC_WORLDS_PATH)
 
     def update_new_coming(self):

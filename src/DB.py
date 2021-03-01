@@ -2,7 +2,7 @@ import sqlite3
 
 
 class DB:
-    VRC_WORLDS_PATH = 'tmp/vrchat_worlds.db'
+    VRC_WORLDS_PATH = 'tmp/vrc.db'
 
     def __init__(self):
         self.connection = sqlite3.connect(DB.VRC_WORLDS_PATH)
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS vrc_worlds (
     visits INT, favorites INT
 )"""
         )
-        cursor.execute("CREATE INDEX IF NOT EXISTS _id ON vrc_worlds(id)")
+        cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS _id ON vrc_worlds(id)")
         cursor.execute("CREATE INDEX IF NOT EXISTS _name ON vrc_worlds(name)")
         cursor.execute("CREATE INDEX IF NOT EXISTS _author_name ON vrc_worlds(author_name)")
         cursor.execute("CREATE INDEX IF NOT EXISTS _description ON vrc_worlds(description)")

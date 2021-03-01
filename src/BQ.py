@@ -25,7 +25,14 @@ class BqClient:
 SELECT
     id, name, author_id, author_name, created_at, updated_at, release_status,
     ROW_NUMBER() OVER (PARTITION BY id ORDER BY updated_at DESC) as _rank,
-    (SQRT(visits) + favorites) / SQRT( POW((DATE_DIFF(CURRENT_DATE(), DATE(created_at), DAY), 2) + POW(DATE_DIFF(CURRENT_DATE(), DATE(updated_at), DAY), 2) + 1) as _value
+    (SQRT(visits) + favorites)
+        / SQRT(
+            POW(
+                DATE_DIFF(CURRENT_DATE(), DATE(created_at), DAY), 2)
+                + POW(DATE_DIFF(CURRENT_DATE(), DATE(updated_at), DAY), 2)
+                + 1
+            ) as _value
+        )
     FROM `{}`
 )
 SELECT id,name,author_id,author_name,created_at,updated_at,_value FROM temp1 WHERE _rank = 1 AND (release_status IS NULL OR release_status != 'hidden')

@@ -6,11 +6,11 @@ from src.Config import Config, dt2str, d2str, str2dt
 from src.VRC import VrcApi, VrcWorld
 from src.BQ import BqClient
 from src.Filter import Filter
-from src.DB import DB
+import src.DB as DB
 
 class Manager:
     INDEX_LIMIT = 10000
-    NEW_COMING_DAY = 5 # 21 is better ?
+    NEW_COMING_DAY = 21
 
     def __init__(self, config):
         self.config = config
@@ -90,9 +90,9 @@ class Manager:
             print("deltes[-1]=", deletes[-1])
             self.bq_client.insert_rows(list(map(lambda x: x.to_bq(), deletes)))
 
-        db = DB()
+        db = DB.DbAll()
         db.insert_vrc(rows)
-        self.upload_bucket(DB.VRC_WORLDS_PATH)
+        self.upload_bucket(DB.VRC_ALL_PATH)
 
     def update_new_coming(self):
         news = []

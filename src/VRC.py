@@ -112,6 +112,22 @@ class VrcWorld:
             return None
         return i
 
+    @staticmethod
+    def db_parse(o):
+        try:
+            i = VrcWorld()
+            i.name = o['name']
+            i.id = o['id']
+            i.author_name = o['author_name']
+            i.author_id = o['author_id']
+            i.description = o['description']
+            i.visits = o['visits'] if 'visits' in o else 0
+            i.favorites = o['favorites'] if 'favorites' in o else 0
+            return i
+        except Exception as ex:
+            print("ERROR_PARSE=", ex, o.keys())
+            return None
+
     def __str__(self):
         return json.dumps({k: dt2str(v) if type(v) is datetime.datetime else v for k,v in self.__dict__.items()})
 

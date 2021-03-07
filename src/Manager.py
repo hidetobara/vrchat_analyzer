@@ -62,6 +62,9 @@ class Manager:
         print("Done")
 
     def update_index(self, limit=None):
+        """
+        update and re-index all worlds.
+        """
         limit = Manager.INDEX_LIMIT if limit is None else limit
         rows = []
         deletes = []
@@ -90,11 +93,14 @@ class Manager:
             print("deltes[-1]=", deletes[-1])
             self.bq_client.insert_rows(list(map(lambda x: x.to_bq(), deletes)))
 
-        db = DB.DbAll()
+        db = DB.DbAll(drop=True)
         db.insert_vrc(rows)
         self.upload_bucket(DB.VRC_ALL_PATH)
 
     def update_new_coming(self):
+        """
+        update and re-index new-coming worlds.
+        """
         news = []
         deletes = []
         for w in self.bq_client.selecting_new_coming_worlds(days=Manager.NEW_COMING_DAY):
@@ -125,7 +131,14 @@ class Manager:
             print("deltes[-1]=", deletes[-1])
             self.bq_client.insert_rows(list(map(lambda x: x.to_bq(), deletes)))
 
+        db = DB.DbComing(drop=True)
+        db.insert(news)
+        self.upload_bucket(DB.VRC_COMING_PATH)
+
     def update_last_month_index(self, today=None):
+        """
+        update and re-index month worlds.
+        """
         if today is None:
             today = datetime.date.today()
         elif type(today) is str:
@@ -150,8 +163,12 @@ class Manager:
             with open(month_path, "w", encoding='utf-8') as f:
                 for row in rows:
                     f.write("\t".join(row.to_tsv()) + "\n")
-            print("news[-1]=", row, "favorites=", row.favorites)
+            print("rows[-1]=", row, "favorites=", row.favorites)
             self.upload_bucket(month_path)
+
+        db = DB.DbMonths()
+        db.insert(today.strftime("%y%m"), rows)
+        self.upload_bucket(DB.VRC_MONTH_PATH)
 
     def adjust_statistics(self, worlds):
         fresh_values = list(map(lambda x: x.fresh_value(), worlds))

@@ -1,5 +1,5 @@
 # Abstract
-This is VRChat Search Site.
+This is Trend Search Site for VRChat.
 
 # Build
 docker build -t gcr.io/vrchat-analyzer/crawler .

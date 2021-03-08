@@ -1,13 +1,47 @@
-import sqlite3
+import sys,os,time,sqlite3
+from pathlib import Path
+
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = './private/vrchat-analyzer-ba2bcb1497e6.json'
+from google.cloud import storage
 
 from src.VRC import VrcApi, VrcWorld
+from src.Config import Config
 
 VRC_ALL_PATH = 'tmp/vrc_all.db'
-VRC_MONTH_PATH = 'tmp/vrc_months.db'
+VRC_MONTHS_PATH = 'tmp/vrc_months.db'
 VRC_COMING_PATH = 'tmp/vrc_coming.db'
 PAGE_SIZE = 24
 
-class DbAll:
+class DbBase:
+    @staticmethod
+    def download_origin(self, path):
+        if os.path.exists(path):
+            p = Path(path)
+            diff = time.time() - os.path.getmtime(p)
+            if diff > 60 * 60 * 24:
+                return
+        filename = os.path.basename(path)
+        client = storage.Client()
+        bucket = storage.Bucket(client)
+        bucket.name = Config.BUCKET_NAME
+        blob = bucket.blob(filename)
+        blob.download_to_filename(path)
+
+    @staticmethod
+    def upload_bucket(self, path):
+        filename = os.path.basename(path)
+        client = storage.Client()
+        bucket = storage.Bucket(client)
+        bucket.name = Config.BUCKET_NAME
+        blob = bucket.blob(filename)
+        blob.upload_from_filename(path)
+
+class DbAll(DbBase):
+    @staticmethod
+    def fetch():
+        DbBase.download_origin(VRC_ALL_PATH)
+        return DbAll()
+
     def __init__(self, test=False, drop=False):
         self.connection = sqlite3.connect(("tests/" if test else "") + VRC_ALL_PATH)
         self.connection.row_factory = sqlite3.Row
@@ -29,6 +63,9 @@ CREATE TABLE IF NOT EXISTS all_worlds (
         self.connection.commit()
     def __del__(self):
         self.connection.close()
+
+    def save(self):
+        self.upload_bucket(VRC_ALL_PATH)
 
     def insert(self, worlds):
         rows = []
@@ -55,9 +92,14 @@ CREATE TABLE IF NOT EXISTS all_worlds (
                 worlds.append(w)
         return worlds
 
-class DbMonths:
+class DbMonths(DbBase):
+    @staticmethod
+    def fetch():
+        DbBase.download_origin(VRC_MONTHS_PATH)
+        return DbMonths()
+
     def __init__(self, test=False, drop=False):
-        self.connection = sqlite3.connect(("tests/" if test else "") + VRC_MONTH_PATH)
+        self.connection = sqlite3.connect(("tests/" if test else "") + VRC_MONTHS_PATH)
         self.connection.row_factory = sqlite3.Row
         cursor = self.connection.cursor()
         if drop:
@@ -76,6 +118,9 @@ CREATE TABLE IF NOT EXISTS month_worlds (
         self.connection.commit()
     def __del__(self):
         self.connection.close()
+
+    def save(self):
+        self.upload_bucket(VRC_MONTHS_PATH)
 
     def insert(self, month, worlds):
         cursor = self.connection.cursor()
@@ -99,7 +144,12 @@ CREATE TABLE IF NOT EXISTS month_worlds (
                 worlds.append(w)
         return worlds
 
-class DbComing:
+class DbComing(DbBase):
+    @staticmethod
+    def fetch():
+        DbBase.download_origin(VRC_COMING_PATH)
+        return DbComing()
+
     def __init__(self, test=False, drop=False):
         self.connection = sqlite3.connect(("tests/" if test else "") + VRC_COMING_PATH)
         self.connection.row_factory = sqlite3.Row
@@ -119,6 +169,9 @@ CREATE TABLE IF NOT EXISTS coming_worlds (
         self.connection.commit()
     def __del__(self):
         self.connection.close()
+
+    def save(self):
+        self.upload_bucket(VRC_COMING_PATH)
 
     def insert(self, worlds):
         cursor = self.connection.cursor()

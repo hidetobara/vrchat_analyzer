@@ -95,7 +95,7 @@ class Manager:
 
         db = DB.DbAll(drop=True)
         db.insert(rows)
-        self.upload_bucket(DB.VRC_ALL_PATH)
+        db.save()
 
     def update_new_coming(self):
         """
@@ -133,7 +133,7 @@ class Manager:
 
         db = DB.DbComing(drop=True)
         db.insert(news)
-        self.upload_bucket(DB.VRC_COMING_PATH)
+        db.save()
 
     def update_last_month_index(self, today=None):
         """
@@ -168,7 +168,7 @@ class Manager:
 
         db = DB.DbMonths()
         db.insert(today.strftime("%y%m"), rows)
-        self.upload_bucket(DB.VRC_MONTH_PATH)
+        db.save()
 
     def adjust_statistics(self, worlds):
         fresh_values = list(map(lambda x: x.fresh_value(), worlds))

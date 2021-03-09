@@ -14,7 +14,7 @@ PAGE_SIZE = 24
 
 class DbBase:
     @staticmethod
-    def download_origin(self, path):
+    def download_origin(path):
         if os.path.exists(path):
             p = Path(path)
             diff = time.time() - os.path.getmtime(p)
@@ -28,7 +28,7 @@ class DbBase:
         blob.download_to_filename(path)
 
     @staticmethod
-    def upload_bucket(self, path):
+    def upload_bucket(path):
         filename = os.path.basename(path)
         client = storage.Client()
         bucket = storage.Bucket(client)
@@ -79,18 +79,18 @@ CREATE TABLE IF NOT EXISTS all_worlds (
         cursor = self.connection.cursor()
         sql = "SELECT id,name,author_id,author_name,description,thumbnail_image_url,favorites FROM all_worlds"
         where = ""
-        if len(keywords) > 0:
+        if keywords is not None and len(keywords) > 0:
             where = " WHERE"
             for n, k in enumerate(keywords):
                 where += '' if n == 0 else ' AND'
                 where += ' (name LIKE "%{}%" OR author_name LIKE "%{}%" OR description LIKE "%{}%")'.format(k, k, k)
-        limit = ' LIMIT {} OFFSET {}'.format(PAGE_SIZE, PAGE_SIZE * page)
+        limit = ' LIMIT {} OFFSET {}'.format(PAGE_SIZE + 1, PAGE_SIZE * page)
         worlds = []
         for row in cursor.execute(sql + where + limit):
             w = VrcWorld.db_parse(row)
             if w:
                 worlds.append(w)
-        return worlds
+        return worlds[:PAGE_SIZE], len(worlds) > PAGE_SIZE
 
 class DbMonths(DbBase):
     @staticmethod
@@ -132,17 +132,19 @@ CREATE TABLE IF NOT EXISTS month_worlds (
         cursor.executemany("INSERT INTO month_worlds VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", rows)
         self.connection.commit()
 
-    def select_by_month(self, month, page):
+    def select_by_month(self, month, page, size=None):
+        if size is None:
+            size = PAGE_SIZE
         cursor = self.connection.cursor()
         sql = "SELECT id,name,author_id,author_name,description,thumbnail_image_url,favorites FROM month_worlds"
         where = " WHERE month = {}".format(month)
-        limit = ' ORDER BY rank LIMIT {} OFFSET {}'.format(PAGE_SIZE, PAGE_SIZE * page)
+        limit = ' ORDER BY rank LIMIT {} OFFSET {}'.format(size + 1, PAGE_SIZE * page)
         worlds = []
         for row in cursor.execute(sql + where + limit):
             w = VrcWorld.db_parse(row)
             if w:
                 worlds.append(w)
-        return worlds
+        return worlds[:size], len(worlds) > size
 
 class DbComing(DbBase):
     @staticmethod
@@ -186,10 +188,10 @@ CREATE TABLE IF NOT EXISTS coming_worlds (
     def select(self, page):
         cursor = self.connection.cursor()
         sql = "SELECT id,name,author_id,author_name,description,thumbnail_image_url,favorites FROM coming_worlds"
-        limit = ' ORDER BY rank LIMIT {} OFFSET {}'.format(PAGE_SIZE, PAGE_SIZE * page)
+        limit = ' ORDER BY rank LIMIT {} OFFSET {}'.format(PAGE_SIZE + 1, PAGE_SIZE * page)
         worlds = []
         for row in cursor.execute(sql + limit):
             w = VrcWorld.db_parse(row)
             if w:
                 worlds.append(w)
-        return worlds
+        return worlds[:PAGE_SIZE], len(worlds) > PAGE_SIZE

@@ -1,14 +1,5 @@
 import os,json,datetime,time,re
 
-def dt2str(dt):
-    return dt.strftime("%Y-%m-%d %H:%M:%S")
-def d2str(dt):
-    return dt.strftime("%Y-%m-%d")
-def str2dt(s):
-    return datetime.datetime.fromisoformat(s) # %Y-%m-%d %H:%M:%S
-
-def epoch_to_datetime(epoch):
-    return datetime.datetime.fromtimestamp(epoch)
 
 class Config:
     INDEX_PATH = 'tmp/index.tsv'
@@ -42,33 +33,23 @@ class Config:
         return self.table[key]
 
     @staticmethod
-    def make_month_path(dt):
-        return dt.strftime('tmp/month%y%m.tsv')
+    def make_month_key(dt):
+        return dt.strftime('%y%m')
 
     @staticmethod
-    def make_last1_path():
+    def make_last1_key():
         today = datetime.date.today()
         first = datetime.date(today.year, today.month, 1)
         last_month = first - datetime.timedelta(1)
-        return Config.make_month_path(last_month)
+        return Config.make_month_key(last_month)
 
     @staticmethod
-    def mode_to_path(mode):
-        if mode is None:
-            return 'tmp/index.tsv'
-        if mode == 'new_coming' or re.match(r'month\d+$', mode):
-            return 'tmp/' + mode + ".tsv"
-        if mode == 'last1':
-            return Config.make_last1_path()
-        return 'tmp/index.tsv'
-
-    @staticmethod
-    def get_old_months(loop=4):
+    def get_old_month_keys(loop=4):
         months = []
         midmonth = datetime.date.today()
         for _ in range(loop+1):
             first = datetime.date(midmonth.year, midmonth.month, 1)
-            months.append(first.strftime('month%y%m'))
+            months.append(first.strftime('%y%m'))
             midmonth = first - datetime.timedelta(3)
         return months[1:]
     

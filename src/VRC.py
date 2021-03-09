@@ -1,6 +1,6 @@
 import json,datetime,requests,json,math
 from requests.auth import HTTPBasicAuth
-from src.Config import Config, dt2str, str2dt
+from src.util import dt2str, str2dt
 
 API_BASE = "https://api.vrchat.cloud/api/1"
 USER_AGENT = "search-bot"
@@ -43,7 +43,7 @@ class VrcWorld:
             'release_status':self.release_status,
             'visits':self.visits, 'favorites':self.favorites, 'thumbnail_image_url':self.thumbnail_image_url}
     def to_web(self):
-        return {'id':self.id, 'name':self.name, 'description':self.description, 'author_name':self.author_name,
+        return {'id':self.id, 'name':self.name, 'description':self.description, 'author_name':self.author_name, 'favorites':self.favorites,
         'thumbnail_image_url':self.thumbnail_image_url,
         'launch_url':"https://www.vrchat.com/home/launch?worldId={}".format(self.id)}
     def to_tsv(self):
@@ -121,6 +121,7 @@ class VrcWorld:
             i.author_name = o['author_name']
             i.author_id = o['author_id']
             i.description = o['description']
+            i.thumbnail_image_url = o['thumbnail_image_url']
             i.visits = o['visits'] if 'visits' in o else 0
             i.favorites = o['favorites'] if 'favorites' in o else 0
             return i

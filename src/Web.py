@@ -4,7 +4,10 @@ from flask import Flask, render_template, request, send_from_directory, redirect
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = './private/vrchat-analyzer-ba2bcb1497e6.json'
 from google.cloud import storage
-from src.Config import Config, epoch_to_datetime, dt2str
+from src.Config import Config
+from src.DB import DbAll, DbMonths, DbComing
+from src.util import epoch_to_datetime, dt2str
+
 
 class Web:
     LIMIT = 24
@@ -64,30 +67,25 @@ class Web:
             return self.get_text('search.recent')
         if 'last1' == mode:
             return self.get_text('search.last1')
-        m = re.match(r'month(\d+)', mode)
-        if m and len(m.group(1)) == 4:
+        m = re.match(r'month(\d{4})', mode)
+        if m:
             year_month = m.group(1)
             return '20' + year_month[0:2] + '/' + year_month[2:]
         return None
 
     def prepare(self):
-        for p in [Config.INDEX_PATH, Config.NEW_COMING_PATH]:
-            if not self.exist_cache(p):
-                self.download_cache(p)
-        for m in Config.get_old_months():
-            p = Config.mode_to_path(m)
-            if not self.exist_cache(p):
-                self.download_cache(p)
+        pass
 
     def get_index(self):
-        self.prepare()
-        worlds_coming, _ = self.select_index(Config.NEW_COMING_PATH, 0, Web.LIMIT)
-        worlds_last1, _ = self.select_index(Config.make_last1_path(), 0, Web.LIMIT)
+        dbComingg = DbComing.fetch()
+        dbMonths = DbMonths.fetch()
+        worlds_coming, _ = dbComingg.select(0)
+        worlds_last1, _ = dbMonths.select_by_month(Config.make_last1_key(), 0)
         olds = []
-        for m in Config.get_old_months():
-            worlds, _ = self.select_index(Config.mode_to_path(m), 0, 3)
-            olds.append({'mode':m, 'title':self.mode_to_str(m), 'worlds':worlds})
-        context = { 'coming_is_active':'active', 'worlds_coming':worlds_coming, 'worlds_last1':worlds_last1, 'olds':olds }
+        for k in Config.get_old_month_keys():
+            worlds, _ = dbMonths.select_by_month(k, 0, 3)
+            olds.append({'mode':'month'+k, 'title':self.mode_to_str(k), 'worlds':self.to_web_list(worlds)})
+        context = { 'coming_is_active':'active', 'worlds_coming':self.to_web_list(worlds_coming), 'worlds_last1':self.to_web_list(worlds_last1), 'olds':olds }
         return render_template('top1.html', **context)
 
     def get_search(self):
@@ -99,10 +97,25 @@ class Web:
             q = re.sub('[ 　]+', ' ', q)
         if p < 0:
             p = 0
+
+        worlds = None
+        is_next = None
+        if mode:
+            m = re.match(r'month(\d{4})$', mode)
+            if m:
+                db = DbMonths.fetch()
+                worlds, is_next = db.select_by_month(m.group(1), p)
+            elif mode == 'new_coming':
+                db = DbComing.fetch()
+                worlds, is_next = db.select(p)
+            elif mode == 'last1':
+                db = DbMonths.fetch()
+                worlds, is_next = db.select_by_month(Config.make_last1_path(), p)
+        if worlds is None:
+            db = DbAll.fetch()
+            worlds, is_next = db.select_by_keywords(q.split(' ') if q else None, p)
         
-        mode_path = Config.mode_to_path(mode)
-        worlds, next_page = self.select_page(mode_path, p, q)
-        context = {'worlds':worlds, 'q':'' if q is None else q, 'p':p, 'next':next_page, 'mode':mode, 'mode_name':self.mode_to_str(mode) }
+        context = {'worlds':self.to_web_list(worlds), 'q':'' if q is None else q, 'p':p, 'next':(p + 1) if is_next else None, 'mode':mode, 'mode_name':self.mode_to_str(mode) }
         return render_template('search.html', **context)
 
     def select_page(self, path, page, query=None):
@@ -139,6 +152,12 @@ class Web:
         if len(array) > 0:
             array[-1]['is_last'] = True
         return array, None if is_end else index 
+
+    def to_web_list(self, worlds):
+        array = list(map(lambda x: x.to_web(), worlds))
+        if len(array) > 0:
+            array[-1]['is_last'] = True
+        return array
 
     def get_tmp_info(self):
         data = []

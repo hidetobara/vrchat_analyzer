@@ -60,7 +60,6 @@ CREATE TABLE IF NOT EXISTS all_worlds (
         cursor.execute("CREATE INDEX IF NOT EXISTS _name ON all_worlds(name)")
         cursor.execute("CREATE INDEX IF NOT EXISTS _author_name ON all_worlds(author_name)")
         cursor.execute("CREATE INDEX IF NOT EXISTS _description ON all_worlds(description)")
-        self.connection.commit()
     def __del__(self):
         self.connection.close()
 
@@ -122,9 +121,14 @@ CREATE TABLE IF NOT EXISTS month_worlds (
     def save(self):
         self.upload_bucket(VRC_MONTHS_PATH)
 
-    def insert(self, month, worlds):
+    def clear(self, month):
         cursor = self.connection.cursor()
         cursor.execute("DELETE FROM month_worlds WHERE month = {}".format(month))
+        self.connection.commit()
+
+    def insert(self, month, worlds):
+        self.clear(month)
+        cursor = self.connection.cursor()
         rows = []
         for n, w in enumerate(worlds):
             rows.append([month, n + 1, w.id, w.name, w.author_id, w.author_name, w.description, w.thumbnail_image_url, w.visits, w.favorites])

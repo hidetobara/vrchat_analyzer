@@ -27,8 +27,8 @@ class TestDb(unittest.TestCase):
 
         db = DbAll(test=True, drop=True)
         db.insert([w1, w2])
-        self.assertEqual(1, len(db.select_by_keywords(['Good'], 0)))
-        self.assertEqual(0, len(db.select_by_keywords(['Bad', 'Boy'], 0)))
+        self.assertEqual(1, len(db.select_by_keywords(['Good'], 0)[0]))
+        self.assertEqual(0, len(db.select_by_keywords(['Bad', 'Boy'], 0)[0]))
 
     def test_months(self):
         w1 = self.make_world('Hello', 'Bob', 'Good morning.')
@@ -36,9 +36,9 @@ class TestDb(unittest.TestCase):
 
         db = DbMonths(test=True, drop=True)
         db.insert(2012, [w1, w2])
-        self.assertEqual(2, len(db.select_by_month(2012, 0)))
-        self.assertEqual(0, len(db.select_by_month(2101, 0)))
-        self.assertEqual(0, len(db.select_by_month(2012, 1)))
+        self.assertEqual(2, len(db.select_by_month(2012, 0)[0]))
+        self.assertEqual(0, len(db.select_by_month(2101, 0)[0]))
+        self.assertEqual(0, len(db.select_by_month(2012, 1)[0]))
 
     def test_coming(self):
         ws = []
@@ -47,5 +47,5 @@ class TestDb(unittest.TestCase):
 
         db = DbComing(test=True, drop=True)
         db.insert(ws)
-        self.assertEqual(24, len(db.select(0)))
-        self.assertEqual(1, len(db.select(1)))
+        self.assertEqual(24, len(db.select(0)[0]))
+        self.assertEqual(1, len(db.select(1)[0]))

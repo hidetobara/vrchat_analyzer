@@ -110,7 +110,7 @@ class Web:
                 worlds, is_next = db.select(p)
             elif mode == 'last1':
                 db = DbMonths.fetch()
-                worlds, is_next = db.select_by_month(Config.make_last1_path(), p)
+                worlds, is_next = db.select_by_month(Config.make_last1_key(), p)
         if worlds is None:
             db = DbAll.fetch()
             worlds, is_next = db.select_by_keywords(q.split(' ') if q else None, p)

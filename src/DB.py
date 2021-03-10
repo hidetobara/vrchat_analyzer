@@ -79,10 +79,10 @@ CREATE TABLE IF NOT EXISTS all_worlds (
         sql = "SELECT id,name,author_id,author_name,description,thumbnail_image_url,favorites FROM all_worlds"
         where = ""
         if keywords is not None and len(keywords) > 0:
-            where = " WHERE"
             for n, k in enumerate(keywords):
-                where += '' if n == 0 else ' AND'
+                where += '' if len(where) == 0 else ' AND'
                 where += ' (name LIKE "%{}%" OR author_name LIKE "%{}%" OR description LIKE "%{}%")'.format(k, k, k)
+            where = " WHERE" + where
         limit = ' LIMIT {} OFFSET {}'.format(PAGE_SIZE + 1, PAGE_SIZE * page)
         worlds = []
         for row in cursor.execute(sql + where + limit):

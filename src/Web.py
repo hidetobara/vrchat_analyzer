@@ -94,7 +94,7 @@ class Web:
         p = request.args.get('p', type=int, default=0)
         mode = request.args.get('mode')
         if q:
-            q = re.sub('[ 　]+', ' ', q)
+            q = re.sub('[%\'" 　]+', ' ', q)
         if p < 0:
             p = 0
 
